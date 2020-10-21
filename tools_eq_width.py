@@ -78,7 +78,7 @@ class Index_Measure():
     results:    Tuple, containing eq_width and width_err.
     '''
 
-    def __init__(self, lams, specs, spec_errs = None, goodpixels = None,
+    def __init__(self, specs, lams, spec_errs = None, goodpixels = None,
                  dlam = 5, bands = None, plot = False,
                  no_error = False, realisations = 100, variance_weight = False):
         self.lams = lams
@@ -175,7 +175,11 @@ class Index_Measure():
                 self.index_errors_cenarro(n, row)
                 
         ### Formats output as a tuple
-        self.results = (self.eq_width, self.width_err)
+        # self.results = (self.eq_width, self.width_err)
+        self.results = {
+            "equivalent_widths":self.eq_width, 
+            "equivalent_widths_err":self.width_err,
+            }
         
         return
     
@@ -494,7 +498,12 @@ class Spectrum_Cut():
             else:
                 self.goodpixels_c["{}".format(row["Name"])] = None
         
-        self.results = (self.spectra_c, self.lambda_c, self.spec_err_c, self.goodpixels_c)
+        self.output = {
+            "fluxes":self.spectra_c,
+            "fluxes_err":self.spec_err_c,
+            "wavelengths":self.lambda_c, 
+            "good_pixels":self.goodpixels_c,
+            }
         
         return
         
