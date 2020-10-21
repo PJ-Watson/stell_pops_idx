@@ -703,17 +703,17 @@ class Spectrum_Fit():
              use_residuals=False,
              FWHM_gal_spec=2.6554,
              p_order=12,
-             log_file_name=None, 
+             log_file_path=None, 
              time_output=False,
              run_auto=True
              ):
         
         
         start_time = time.strftime("%Y_%m_%dT%H%M%SZ")
-        if log_file_name==None:
+        if log_file_path==None:
             self.err_log_file = "log_files/SSP_error_log_"+start_time+".log"
         else:
-            self.err_log_file = log_file_name
+            self.err_log_file = log_file_path
 
         self.gal_spec = gal_spec
         self.gal_var = gal_var
@@ -734,14 +734,33 @@ class Spectrum_Fit():
         
         if run_auto == True:
             
-            self.spec_prepare()
+            try:
+                self.spec_prepare()
+            except:
+                err_msg_prep = "Failure in preparing spectrum for ppxf fit."
+                raise Exception(err_msg_prep)
             
             # (km/s), starting guess for [V,sigma]
             self.init_guess = [0.0, 100.0] 
             
-            self.initial_fit()
-            self.second_fit()
-            self.third_fit_mc_errors()
+            try:
+                self.initial_fit()
+            except:
+                err_msg_first = "Failure in first ppxf fit."
+                raise Exception(err_msg_first)
+                
+            try:
+                self.second_fit()
+            except:
+                err_msg_second = "Failure in second ppxf fit."
+                raise Exception(err_msg_second)
+                
+            try:
+                self.third_fit_mc_errors()
+            except:
+                err_msg_third = "Failure in third ppxf fit."
+                raise Exception(err_msg_third)
+                
             
 ###################################################################################################            
             
@@ -856,10 +875,7 @@ class Spectrum_Fit():
 
         # If not enough goodpixels, skip this galaxy.
         if np.shape(self.goodpixels)[0] <= 1.0:
-            
             err_msg_init = "Not enough usable pixels in spectrum."
-            with open(self.err_log_file, 'a') as myfile:
-                myfile.write(err_msg_init)
             raise Exception(err_msg_init)
             return
             
@@ -1114,8 +1130,6 @@ class Spectrum_Fit():
                 
             except:
                 err_msg_init = "Crashed trying to estimate errors."
-                with open(self.err_log_file, 'a') as myfile:
-                    myfile.write(err_msg_init)
                 raise Exception(err_msg_init)
                                             
             vs[n] = pp_temp.sol[0]
@@ -1133,6 +1147,21 @@ class Spectrum_Fit():
         
         # self.output = (self.gal_replaced, self.noise_new, self.log_gal_lam, 
         #         pp.sol[0], pp.sol[1], SN_ap, self.gp_mask, mverr, mserr)
+<<<<<<< HEAD
         self.output =  (self.gal_replaced, self.noise_new, self.log_gal_lam, 
                 pp.sol[0], pp.sol[1], SN_ap, self.gp_mask_exp, vel_err, sig_err)
 >>>>>>> 7825a90... Previous work
+=======
+        self.results = {
+            "flux_replaced_pixels":self.gal_replaced, 
+            "flux_err":self.noise_new, 
+            "wavelength":self.log_gal_lam, 
+            "good_pixel_mask":self.gp_mask_exp,
+            "S/N":SN_ap,
+            "velocity":pp.sol[0],
+            "velocity_err":vel_err,
+            "sigma":pp.sol[1],
+            "sigma_err":sig_err,
+            }
+                # pp.sol[0], pp.sol[1], SN_ap, self.gp_mask_exp, vel_err, sig_err}
+>>>>>>> ce01334... New

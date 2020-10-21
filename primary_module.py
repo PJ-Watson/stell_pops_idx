@@ -23,7 +23,10 @@ def run_all(
         flux_spectrum,
         variance_spectrum,
         wavelength_spectrum,
+<<<<<<< HEAD
         template_directory,
+=======
+>>>>>>> ce01334... New
         flux_array_templates,
         wavelength_array_templates,
         redshift_estimate,
@@ -32,6 +35,7 @@ def run_all(
         irreg_SSP_models=None,
         log_time=True,
         save_intermediate_files=True
+<<<<<<< HEAD
     ):   
     
     # out_dir = pathlib.Path(output_directory)
@@ -43,6 +47,15 @@ def run_all(
     
     start_time = time.time()
     err_log_file = out_subdir.joinpath("Logfile_"+time.strftime("%Y_%m_%dT%H%M%SZ")+".log")
+=======
+        ):   
+    
+    out_dir = pathlib.Path(output_directory)
+    print (out_dir.is_dir())
+    
+    start_time = time.time()
+    err_log_file = out_dir.joinpath("errors.log")
+>>>>>>> ce01334... New
     init_msg = "{} - analysis started.\n\n".format(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
     with err_log_file.open("w") as f:
             f.write(init_msg)
@@ -71,7 +84,11 @@ def run_all(
             log_rebinned_data["wavelength"] = SF.results["wavelength"]
             log_rebinned_data["good_pixels"] = SF.results["good_pixel_mask"]
             
+<<<<<<< HEAD
             lrd_table_path = out_subdir.joinpath("{}_log_rebinned_data.fits".format(output_id))
+=======
+            lrd_table_path = out_dir.joinpath("{}_log_rebinned_data.fits".format(output_id))
+>>>>>>> ce01334... New
             log_rebinned_data.write(lrd_table_path, overwrite = True)            
             
         c = 299792.458
@@ -86,9 +103,15 @@ def run_all(
     except:
         err_msg = "{:.2f} - Failure in spectral fitting module.\n\n".format(
             time.time() - start_time)
+<<<<<<< HEAD
         with err_log_file.open("a") as f:
             f.write(err_msg)
             traceback.print_exc(file = f)
+=======
+        with open(err_log_file, 'a') as logfile:
+            logfile.write(err_msg)
+            traceback.print_exc(file = logfile)
+>>>>>>> ce01334... New
         raise Exception(err_msg)
         
     try:
@@ -115,9 +138,15 @@ def run_all(
     except:
         err_msg = "{:.2f} - Failure in spectral cutting and convolution module.\n\n".format(
             time.time() - start_time)
+<<<<<<< HEAD
         with err_log_file.open("a") as f:
             f.write(err_msg)
             traceback.print_exc(file = f)
+=======
+        with open(err_log_file, 'a') as logfile:
+            logfile.write(err_msg)
+            traceback.print_exc(file = logfile)
+>>>>>>> ce01334... New
         raise Exception(err_msg)
         
     try:
@@ -135,6 +164,7 @@ def run_all(
     except:
         err_msg = "{:.2f} - Failed to measure line indices.\n\n".format(
             time.time() - start_time)
+<<<<<<< HEAD
         with err_log_file.open("a") as f:
             f.write(err_msg)
             traceback.print_exc(file = f)
@@ -144,24 +174,45 @@ def run_all(
         
         # template_dir = out_dir.joinpath("models_used")
         
+=======
+        with open(err_log_file, 'a') as logfile:
+            logfile.write(err_msg)
+            traceback.print_exc(file = logfile)
+        raise Exception(err_msg)
+        
+    try:
+>>>>>>> ce01334... New
         ### Determine the SSP parameters        
         SSP = SSP_Params(
             IM.results["equivalent_widths"],
             IM.results["equivalent_widths_err"],
+<<<<<<< HEAD
             temp_dir,
             err_log_file,
             sig_flags=conv_obj.output["convolution_flags"],
             sigma=SF.results["sigma"],
             tmj_mods = reg_SSP_models, 
             hi_res = True, 
+=======
+            sig_flags=conv_obj.output["convolution_flags"],
+            sigma=SF.results["sigma"],
+            tmj_mods = reg_SSP_models, 
+            hi_res = False, 
+>>>>>>> ce01334... New
             )
         
     except:
         err_msg = "{:.2f} - Failed to determine optimal SSP parameters.\n\n".format(
             time.time() - start_time)
+<<<<<<< HEAD
         with err_log_file.open("a") as f:
             f.write(err_msg)
             traceback.print_exc(file = f)
+=======
+        with open(err_log_file, 'a') as logfile:
+            logfile.write(err_msg)
+            traceback.print_exc(file = logfile)
+>>>>>>> ce01334... New
         raise Exception(err_msg)
         
     try:
@@ -197,6 +248,7 @@ def run_all(
         results_table["SSP_alpha_err_high"] = SSP.ssp_alpha_tmj_bounds[1]
             
         # out_table_path = out_dir.joinpath("{}_output.fits".format(output_id))
+<<<<<<< HEAD
         out_table_path = out_subdir.joinpath("output.fits")
         results_table.write(
             out_table_path, 
@@ -388,19 +440,31 @@ def run_all_previous_results(
             
         # out_table_path = out_dir.joinpath("{}_output.fits".format(output_id))
         out_table_path = out_subdir.joinpath("output.fits".format(output_id))
+=======
+        out_table_path = out_dir.joinpath("0_output.fits")
+>>>>>>> ce01334... New
         results_table.write(
             out_table_path, 
             overwrite=True,
             )
+<<<<<<< HEAD
         final_msg = "{:.2f} - Analysis finished. Results written to disk.\n\n".format(
             time.time() - start_time)
         with err_log_file.open("a") as f:
             f.write(final_msg)
+=======
+>>>>>>> ce01334... New
         
     except:
         err_msg = "{:.2f} - Failed to write results to disk.\n\n".format(
             time.time() - start_time)
+<<<<<<< HEAD
         with err_log_file.open("a") as f:
             f.write(err_msg)
             traceback.print_exc(file = f)
+=======
+        with open(err_log_file, 'a') as logfile:
+            logfile.write(err_msg)
+            traceback.print_exc(file = logfile)
+>>>>>>> ce01334... New
         raise Exception(err_msg)
