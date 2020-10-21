@@ -8,6 +8,7 @@ Created on Mon Mar 23 17:11:38 2020
 ###################################################################################################
 
 import numpy as np
+<<<<<<< HEAD
 # from numpy import ma
 import bottleneck as bn
 
@@ -17,14 +18,30 @@ from scipy.interpolate import griddata #, InterpolatedUnivariateSpline, Rbf
 # from astropy.table import Table
 
 # import numpy.lib.recfunctions as rf
+=======
+from numpy import ma
+import bottleneck as bn
+
+from scipy.interpolate import griddata, InterpolatedUnivariateSpline, Rbf
+from scipy.stats import chi2 as scipy_chi2
+
+from astropy.table import Table
+
+import numpy.lib.recfunctions as rf
+>>>>>>> 7825a90... Previous work
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
 import numba
+<<<<<<< HEAD
 import pathlib
 
 import glob, traceback, logging, json, pickle, copy, time
+=======
+
+import glob, traceback, logging, time, json, os, pickle, copy
+>>>>>>> 7825a90... Previous work
 
 ###################################################################################################
 
@@ -51,6 +68,7 @@ class SSP_Params():
     
     '''
 
+<<<<<<< HEAD
     def __init__(
             self, 
             equiv_widths, 
@@ -75,6 +93,18 @@ class SSP_Params():
         
         with self.err_log_file.open("a") as f:
             f.write("-" * 62 + "\n"+"Beginning SSP fit."+"\n")
+=======
+    def __init__(self, equiv_widths, width_errs, hi_res = False, 
+                 sigma = None, sig_flags = None,
+                 tmj_mods = None, sch_mods = None, 
+                 tmj_names = None, sch_names = None):
+        
+        start_time = time.strftime("%Y_%m_%dT%H%M%SZ")
+        self.err_log_file = "log_files/SSP_error_log_"+start_time+".log"
+        
+        self.eq_widths = copy.deepcopy(equiv_widths)
+        self.width_errs = width_errs
+>>>>>>> 7825a90... Previous work
         
         ### Sanity check for inputs
         assert self.eq_widths.keys() == self.width_errs.keys(), \
@@ -86,6 +116,7 @@ class SSP_Params():
             assert self.eq_widths.keys() == self.sig_flags.keys(), \
                 "The widths and dispersion correction flags do not match.\n"
         else:
+<<<<<<< HEAD
             self.sig_flags = dict.fromkeys(self.eq_widths, 0)
         
         self.tmj_mods = tmj_mods
@@ -124,6 +155,55 @@ class SSP_Params():
             #     err_conv_dict_tmj = ("Could not load file to translate index "+
             #                          "names from TMJ templates.\n")
             #     raise Exception(err_conv_dict_tmj)
+=======
+            self.sig_flags = dict.fromkeys(self.eq_width, 0)
+        
+        self.tmj_mods = tmj_mods
+        self.sch_mods = sch_mods
+        
+        if self.tmj_mods is None and self.sch_mods is None:
+            err_msg_init = "Requires at least one model as input."
+            with open(self.err_log_file, 'a') as myfile:
+                myfile.write(err_msg_init)
+            raise Exception(err_msg_init)
+            
+        self.tmj_names = tmj_names
+        self.sch_names = sch_names
+            
+        if self.sch_mods is not None:
+            try:
+                with open("templates/LI_to_sch.json") as infile:
+                    self.LI_to_sch = json.load(infile)
+                    
+            except Exception as e:
+                err_conv_dict_sch = ("Could not load file to translate index "+
+                                     "names from Schiavon templates.\n")
+                
+                with open(self.err_log_file, 'a') as myfile:
+                    myfile.write(err_conv_dict_sch)
+                    traceback.print_exc(file = myfile)
+                raise e
+            
+            if self.sch_names is None:
+                self.sch_names = ['Hdelta_F', 'Hdelta_A', 'Hgamma_F', 
+                                  'Hgamma_A', 'Fe4383','H_beta','Fe5015',
+                                  'Mg_b','Mg_2','Fe5270','Fe5335']
+            
+            
+        if self.tmj_mods is not None:
+            try:
+                with open("templates/LI_to_tmj.json") as infile:
+                    self.LI_to_tmj = json.load(infile)
+                    
+            except Exception as e:
+                err_conv_dict_tmj = ("Could not load file to translate index "+
+                                     "names from TMJ templates.\n")
+                
+                with open(self.err_log_file, 'a') as myfile:
+                    myfile.write(err_conv_dict_tmj)
+                    traceback.print_exc(file = myfile)
+                raise e
+>>>>>>> 7825a90... Previous work
                 
                 
         ### Do everything up to calculating chi^2 using individual indices
@@ -136,10 +216,14 @@ class SSP_Params():
                                   "Ca4227", "G4300", "Hgamma_A", "Hgamma_F",
                                   "Fe4383", "Ca4455", "Fe4531", "Fe4668",
                                   "H_beta", "Fe5015", "Mg_1", "Mg_2", 
+<<<<<<< HEAD
                                   "Mg_b", "Fe5270", "Fe5335", "Fe5406",
                                    "Fe5709", "Fe5782", 
                                    #"Na_D", 
                                    "TiO_1", "TiO_2"]
+=======
+                                  "Mg_b", "Fe5270", "Fe5335", "Fe5406"]
+>>>>>>> 7825a90... Previous work
             
         self.hi_res = hi_res
         self.sigma = sigma
@@ -147,6 +231,7 @@ class SSP_Params():
         ### Begin running methods
         
             
+<<<<<<< HEAD
         # if self.sch_mods is not None:
         #     self.sch_interp()
         #     if any(self.sig_flags.values()) == 1:
@@ -179,6 +264,21 @@ class SSP_Params():
                     f.write("Finished analysis: {}".format(
                         time.time() - self.start_time
                     )+"\n")
+=======
+        if self.sch_mods is not None:
+            self.sch_interp()
+            if any(self.sig_flags.values()) == 1:
+                print ("Beginning correction")
+                self.sch_disp_correction()
+                print ("Ending correction")
+            else:
+                self.sch_measure()
+            
+        if self.tmj_mods is not None:
+            self.tmj_interp()
+            if any(self.sig_flags.values()) == 1:
+                self.tmj_disp_correction()
+>>>>>>> 7825a90... Previous work
             else:
                 self.tmj_measure()
         
@@ -232,8 +332,11 @@ class SSP_Params():
         
         self.tmj_free_param = len(self.tmj_names) - 3
         
+<<<<<<< HEAD
         self.mod_arr = None
         
+=======
+>>>>>>> 7825a90... Previous work
         if self.hi_res == True:
             
             self.tmj_age_interp = np.geomspace(bn.nanmin(tmj_age),
@@ -247,6 +350,7 @@ class SSP_Params():
             
             for name in self.tmj_names:
                 try:
+<<<<<<< HEAD
                     self.tmj_mod_interp[name] = np.load(
                         self.temp_dir.joinpath(
                             "tmj_interpolated_hi_res/{}.npy".format(name)))
@@ -272,6 +376,14 @@ class SSP_Params():
                             self.tmj_errs, 
                             "tmj_err_interpolated_hi_res",
                         )
+=======
+                    self.tmj_mod_interp[name] = \
+                        np.load("templates/tmj_interpolated_hi_res/{}.npy".format(name))
+                    
+                except:
+                    
+                    self.tmj_create_interp(name)
+>>>>>>> 7825a90... Previous work
                 
         else:
             
@@ -286,6 +398,7 @@ class SSP_Params():
             
             for name in self.tmj_names:
                 try:
+<<<<<<< HEAD
                     self.tmj_mod_interp[name] = np.load(
                         self.temp_dir.joinpath(
                             "tmj_interpolated_lo_res/{}.npy".format(name)))
@@ -311,12 +424,24 @@ class SSP_Params():
                             self.tmj_errs, 
                             "tmj_err_interpolated_lo_res",
                         )
+=======
+                    self.tmj_mod_interp[name] = \
+                        np.load("templates/tmj_interpolated_lo_res/{}.npy".format(name))
+                    
+                except:
+                    
+                    self.tmj_create_interp(name)
+>>>>>>> 7825a90... Previous work
         
         return
     
 ###################################################################################################
    
+<<<<<<< HEAD
     def tmj_create_interp(self, name, data, out_path):
+=======
+    def tmj_create_interp(self, name):
+>>>>>>> 7825a90... Previous work
         
         '''Generates the interpolated TMJ models. 
         Saves the output to a file for future use.
@@ -327,6 +452,7 @@ class SSP_Params():
                             axis the corresponding index measurements from the model.
         '''
         
+<<<<<<< HEAD
         if np.nanmin(data["[alpha/Fe]"])==np.nanmax(data["[alpha/Fe]"]):
             
             X, Y = np.meshgrid(self.tmj_age_interp, self.tmj_Z_interp,
@@ -485,6 +611,139 @@ class SSP_Params():
         
 #         del X,Y,Z, interp
 #         return
+=======
+        X, Y, Z = np.meshgrid(self.tmj_age_interp, self.tmj_Z_interp, 
+                              self.tmj_alpha_interp, indexing='ij')
+        
+        
+        interp = griddata((self.tmj_mods["age"],self.tmj_mods["[Z/H]"],
+                                              self.tmj_mods["[alpha/Fe]"]), 
+                                             self.tmj_mods[self.LI_to_tmj[name]], (X,Y,Z),
+                                             method = 'linear')
+        
+        self.tmj_mod_interp[name] = interp
+        
+        if self.hi_res == True:
+            if not os.path.exists("templates/tmj_interpolated_hi_res/"):
+                os.mkdir("templates/tmj_interpolated_hi_res/")
+            np.save("templates/tmj_interpolated_hi_res/{}.npy".format(name), interp)
+        else:            
+            if not os.path.exists("templates/tmj_interpolated_lo_res/"):
+                os.mkdir("templates/tmj_interpolated_lo_res/")
+            np.save("templates/tmj_interpolated_lo_res/{}.npy".format(name), interp)
+            
+        del X,Y,Z, interp
+        return
+    
+###################################################################################################
+    
+    def sch_interp(self):
+
+        '''Interpolates the Schiavon models to a given resolution. 
+        If hi_res is True, then the parameter spacing is 0.01 in [alpha/Fe], and 0.02 in log age 
+        and metallicity. If no existing template file is found, a new one will be generated and 
+        saved for future use.
+        
+        Attributes
+        ----------
+        sch_free_param (float):         The number of free parameters in the model.
+        
+        sch_age_interp (1d array):      The log interpolated values for the age of the stellar 
+                                        population.
+                                    
+        sch_Z_interp (1d array):        The linearly interpolated values for the metallicity, Z.
+        
+        sch_alpha_interp (1d array):    The linearly interpolated values for [alpha/Fe].
+        
+        sch_mod_interp (4d array):      The first 3 axes are the parameter values used, and the 4th
+                                        axis the corresponding index measurements from the model.
+        
+        '''
+        
+        sch_age = np.unique(self.sch_mods["Age"])
+        sch_Z = np.unique(self.sch_mods["[Fe/H]"])
+        sch_alpha = np.unique(self.sch_mods["[alpha/Fe]"])
+        
+        self.sch_free_param = len(self.sch_names) - 3
+        
+        if self.hi_res == True:
+            
+            self.sch_age_interp = np.geomspace(bn.nanmin(sch_age),
+                                              bn.nanmax(sch_age), 220)
+            self.sch_Z_interp = np.linspace(bn.nanmin(sch_Z),
+                                              bn.nanmax(sch_Z), 90)
+            self.sch_alpha_interp = np.linspace(bn.nanmin(sch_alpha),
+                                              bn.nanmax(sch_alpha), 43)
+            
+            self.sch_mod_interp = dict()
+            
+            for name in self.sch_names:
+                try:
+                    self.sch_mod_interp[name] = \
+                        np.load("templates/sch_interpolated_hi_res/{}.npy".format(name))
+                    
+                except:
+                    
+                    self.sch_create_interp(name)
+                
+        else:
+            
+            self.sch_age_interp = np.geomspace(bn.nanmin(sch_age),
+                                              bn.nanmax(sch_age), 12)
+            self.sch_Z_interp = np.linspace(bn.nanmin(sch_Z),
+                                              bn.nanmax(sch_Z), 15)
+            self.sch_alpha_interp = np.linspace(bn.nanmin(sch_alpha),
+                                              bn.nanmax(sch_alpha), 9)
+            
+            self.sch_mod_interp = dict()
+            
+            for name in self.sch_names:
+                try:
+                    self.sch_mod_interp[name] = \
+                        np.load("templates/sch_interpolated_lo_res/{}.npy".format(name))
+                    
+                except:
+                    
+                    self.sch_create_interp(name)
+        
+        return
+    
+###################################################################################################
+   
+    def sch_create_interp(self, name):
+        
+        '''Generates the interpolated sch models. 
+        Saves the output to a file for future use.
+        
+        Attributes
+        ----------
+        sch_mod_interp:     4D array. The first 3 axes are the parameter values used, and the 4th
+                            axis the corresponding index measurements from the model.
+        '''
+        
+        X, Y, Z = np.meshgrid(self.sch_age_interp, self.sch_Z_interp, 
+                              self.sch_alpha_interp, indexing='ij')
+        
+        
+        interp = griddata((self.sch_mods["Age"],self.sch_mods["[Fe/H]"],
+                                              self.sch_mods["[alpha/Fe]"]), 
+                                             self.sch_mods[self.LI_to_sch[name]], (X,Y,Z),
+                                             method = 'linear')
+        
+        self.sch_mod_interp[name] = interp
+        
+        if self.hi_res == True:
+            if not os.path.exists("templates/sch_interpolated_hi_res/"):
+                os.mkdir("templates/sch_interpolated_hi_res/")
+            np.save("templates/sch_interpolated_hi_res/{}.npy".format(name), interp)
+        else:            
+            if not os.path.exists("templates/sch_interpolated_lo_res/"):
+                os.mkdir("templates/sch_interpolated_lo_res/")
+            np.save("templates/sch_interpolated_lo_res/{}.npy".format(name), interp)
+            
+        del X,Y,Z, interp
+        return
+>>>>>>> 7825a90... Previous work
     
 ###################################################################################################
     
@@ -659,6 +918,7 @@ class SSP_Params():
 #         del X,Y,Z, interp
 #         return
     
+<<<<<<< HEAD
 # ###################################################################################################
 
 #     def sch_disp_correction(self):
@@ -731,6 +991,83 @@ class SSP_Params():
 #         else:
 #             print ("No solution found yet.\n")
 #             return False 
+=======
+###################################################################################################
+
+    def sch_disp_correction(self):
+        
+        '''Dispersion correction for the Schiavon models.
+        
+        '''
+        
+        print ("Beginning correction")
+        
+        self.sch_copy = copy.deepcopy(self.eq_widths)
+        
+        try:
+            templates = glob.glob("templates\\vel_disp_corrs\\corr_????_gyr.pkl")
+            templates.sort()
+            
+            ages = [float(t.split("\\")[-1][5:9]) for t in templates]
+            
+            if len(templates) == 0:
+                
+                templates = glob.glob("templates/vel_disp_corrs/corr_????_gyr.pkl")
+                templates.sort()
+                
+                ages = [float(t.split("/")[-1][5:9]) for t in templates]
+                
+        except Exception as e:
+            err_corr_files = ("Could not load dispersion correction files.")
+            with open(self.err_log_file, 'a') as myfile:
+                myfile.write(err_corr_files)
+                traceback.print_exc(file = myfile)
+            raise e
+        
+        
+        # print (templates)
+        
+        for p, a in zip(templates, ages):
+            
+            end = self.sch_corr_sub(p, a)
+            
+            if end:
+                break
+            
+            
+        self.eq_widths, self.sch_copy = self.sch_copy, self.eq_widths
+        
+        
+        return
+        
+        
+    def sch_corr_sub(self, tab_path, age):
+        
+        with open(tab_path, 'rb') as outfile:
+            corr_tab = pickle.load(outfile)
+        
+        sig_idx = np.searchsorted(corr_tab["sigma"], self.sigma)
+        
+        
+        for n in self.sch_names:
+            if not np.isfinite(corr_tab[n][sig_idx]):
+                self.eq_widths[n] = self.sch_copy[n]
+            elif corr_tab[n+"_units"] == 1:
+                self.eq_widths[n] = self.sch_copy[n] + corr_tab[n][sig_idx]
+            else:
+                self.eq_widths[n] = self.sch_copy[n] * corr_tab[n][sig_idx]
+                
+        self.sch_measure(iterate = False)
+        # self.chi_plot()
+        
+        if self.ssp_age_sch <= age:
+            print ("Successfully converged to a solution, with age below "
+                   "{} Gyr.\n".format(age))
+            return True
+        else:
+            print ("No solution found yet.\n")
+            return False 
+>>>>>>> 7825a90... Previous work
     
 ###################################################################################################
 
@@ -758,6 +1095,7 @@ class SSP_Params():
         '''
         
         self.tmj_copy = copy.deepcopy(self.eq_widths)
+<<<<<<< HEAD
         self.tmj_errs_copy = copy.deepcopy(self.width_errs)
         
         
@@ -794,6 +1132,29 @@ class SSP_Params():
             f.write("Checked indices: {}".format(
                 time.time() - self.start_time
             )+"\n")
+=======
+        
+        
+        try:
+            templates = glob.glob("templates\\vel_disp_corrs\\corr_????_gyr.pkl")
+            templates.sort()
+            
+            ages = [float(t.split("\\")[-1][5:9]) for t in templates]
+            
+            if len(templates) == 0:
+                
+                templates = glob.glob("templates/vel_disp_corrs/corr_????_gyr.pkl")
+                templates.sort()
+                
+                ages = [float(t.split("/")[-1][5:9]) for t in templates]
+                
+        except Exception as e:
+            err_corr_files = ("Could not load dispersion correction files.")
+            with open(self.err_log_file, 'a') as myfile:
+                myfile.write(err_corr_files)
+                traceback.print_exc(file = myfile)
+            raise e
+>>>>>>> 7825a90... Previous work
         
         
         for p, a in zip(templates, ages):
@@ -812,10 +1173,16 @@ class SSP_Params():
         # print (self.corr_widths)
             
         self.eq_widths, self.tmj_copy = self.tmj_copy, self.eq_widths
+<<<<<<< HEAD
         self.width_errs, self.tmj_errs_copy = self.tmj_errs_copy, self.width_errs
         
         self.corr_widths = self.tmj_copy
         self.corr_width_errs = self.tmj_errs_copy
+=======
+        
+         
+        self.corr_widths = self.tmj_copy
+>>>>>>> 7825a90... Previous work
         
             
         return
@@ -825,25 +1192,32 @@ class SSP_Params():
         
         with open(tab_path, 'rb') as outfile:
             corr_tab = pickle.load(outfile)
+<<<<<<< HEAD
             
         with self.err_log_file.open("a") as f:
             f.write("Loaded correction table: {}".format(
                 time.time() - self.start_time
             )+"\n")
+=======
+>>>>>>> 7825a90... Previous work
         
         sig_idx = np.searchsorted(corr_tab["sigma"], self.sigma)
         
         
         for n in self.tmj_names:
+<<<<<<< HEAD
             sig_idx = np.clip(
                 sig_idx, 
                 a_min=0, 
                 a_max=len(corr_tab[n])-1,
             )
+=======
+>>>>>>> 7825a90... Previous work
             if not np.isfinite(corr_tab[n][sig_idx]):
                 self.eq_widths[n] = self.tmj_copy[n]
             elif corr_tab[n+"_units"] == 1:
                 self.eq_widths[n] = self.tmj_copy[n] + corr_tab[n][sig_idx]
+<<<<<<< HEAD
                 self.width_errs[n] = self.tmj_errs_copy[n] + corr_tab[n][sig_idx]
             else:
                 self.eq_widths[n] = self.tmj_copy[n] * corr_tab[n][sig_idx]
@@ -878,6 +1252,22 @@ class SSP_Params():
                 f.write(msg)
                 print (msg)
         
+=======
+            else:
+                self.eq_widths[n] = self.tmj_copy[n] * corr_tab[n][sig_idx]
+                
+        
+        self.tmj_measure(iterate = False)
+        # self.chi_plot()
+        
+        
+        if self.ssp_age_tmj <= age:
+            print ("Successfully converged to a solution, with age below "
+                   "{} Gyr.\n".format(age))
+            return True
+        else:
+            print ("No solution found yet.\n")
+>>>>>>> 7825a90... Previous work
             return False
     
 ###################################################################################################
@@ -905,6 +1295,7 @@ class SSP_Params():
         
         names = [n for n in self.tmj_names if self.tmj_idx_check[n]]
         
+<<<<<<< HEAD
         # self.tmj_chi = np.empty_like(self.tmj_mod_interp[names[0]])
         
         self.tmj_free_param = len(names) - 3
@@ -945,13 +1336,27 @@ class SSP_Params():
             f.write("Created chi^2 array: {}".format(
                 time.time() - self.start_time
             )+"\n")
+=======
+        self.tmj_chi = np.empty_like(self.tmj_mod_interp[names[0]])
+        
+        self.tmj_free_param = len(names) - 3
+        
+        for ijk in np.ndindex(self.tmj_chi.shape):
+            self.tmj_chi[ijk] = (bn.nansum([((self.eq_widths[n] - 
+                                              self.tmj_mod_interp[n][ijk])/
+                                             self.width_errs[n])**2 for n in names])/
+                                 self.tmj_free_param)
+>>>>>>> 7825a90... Previous work
             
         self.tmj_chi_idx = np.unravel_index(bn.nanargmin(self.tmj_chi, 
                                 axis=None), self.tmj_chi.shape)
         
+<<<<<<< HEAD
         with self.err_log_file.open("a") as f:
             f.write("Found minimum: {}".format(time.time() - self.start_time)+"\n")
         
+=======
+>>>>>>> 7825a90... Previous work
         self.tmj_chi_min = self.tmj_chi[self.tmj_chi_idx]
         
         self.ssp_age_tmj = self.tmj_age_interp[self.tmj_chi_idx[0]]
@@ -962,6 +1367,7 @@ class SSP_Params():
     
 ###################################################################################################
     
+<<<<<<< HEAD
     def tmj_check(self):
         
         self.tmj_idx_check = dict()
@@ -980,6 +1386,8 @@ class SSP_Params():
     
 ###################################################################################################
     
+=======
+>>>>>>> 7825a90... Previous work
     def tmj_measure(self, iterate = False):
         
         '''A method to calculate the most likely SSP parameters from observed lick indices, using 
@@ -999,7 +1407,21 @@ class SSP_Params():
         
         '''
         
+<<<<<<< HEAD
         self.tmj_check()
+=======
+        self.tmj_idx_check = dict()
+        for name in self.tmj_names:
+            tmj_max = bn.nanmax(self.tmj_mods[self.LI_to_tmj[name]],axis=0)
+            tmj_min = np.nanmin(self.tmj_mods[self.LI_to_tmj[name]],axis=0)
+            
+            if self.eq_widths[name] - np.abs(self.width_errs[name]) > tmj_max:
+                self.tmj_idx_check[name] = False
+            elif self.eq_widths[name] + np.abs(self.width_errs[name]) < tmj_min:
+                self.tmj_idx_check[name] = False
+            else:
+                self.tmj_idx_check[name] = True
+>>>>>>> 7825a90... Previous work
             
         ### Must have at least 5 indices in the model range
         if np.sum([val for val in self.tmj_idx_check.values()]) < 5:
@@ -1089,6 +1511,7 @@ class SSP_Params():
                 
         return
     
+<<<<<<< HEAD
 # ###################################################################################################
     
 #     def sch_chi_sum(self, ijk, names):
@@ -1285,6 +1708,204 @@ class SSP_Params():
         
             
 #         return
+=======
+###################################################################################################
+    
+    def sch_chi_sum(self, ijk, names):
+        
+        '''A method to calculate the chi^2 sum for a given set of observed indices, model 
+        predictions, and errors. Will first check to see if the model predictions exist (since the 
+        Schiavon models do not have uniform coverage in the parameter space), returning NaN if not.
+        
+        Parameters
+        ----------
+        obs (1d array):     The observed index measurements.
+        
+        err (1d array):     The error on the observed indices.
+            
+        mod (1d array):     The predicted index measurements from the model.
+            
+        
+        Output
+        ------
+        chi^2:          Will return either NaN or the sum of chi^2 contributions from each index.
+        
+        '''
+        
+        if np.any(self.sch_mod_interp[names[0]][ijk] == np.nan):
+            return np.nan
+        else:
+            return (bn.nansum([((self.eq_widths[n] - self.sch_mod_interp[n][ijk])/
+                                self.width_errs[n])**2 for n in names])/self.sch_free_param)
+    
+###################################################################################################
+    
+    def sch_measure_sub(self):
+        
+        '''A method to calculate the chi^2 array for all possible parameter values, given 
+        sch_idx_check exists, using the models from Schiavon (2007). Finds the minimum chi^2 value 
+        and the corresponding SSP parameters.
+        
+        Attributes
+        ----------
+        sch_chi (3d array):         The reduced chi^2 values corresponding to the fit of the model 
+                                    to the observations.
+        
+        sch_chi_idx (1d array):     The index of the minimum value in the chi^2 array.
+        
+        ssp_age_sch (float):        The most likely value for the age of the stellar population.
+                                    
+        ssp_Z_sch (float):          The most likely value for the metallicity, Z.
+        
+        ssp_alpha_sch (float):      The most likely value for [alpha/Fe].
+        
+        '''
+        
+        
+        names = [n for n in self.sch_names if self.sch_idx_check[n]]
+        
+        self.sch_chi = np.empty_like(self.sch_mod_interp[names[0]])
+        
+        for ijk in np.ndindex(self.sch_chi.shape):
+            self.sch_chi[ijk] = self.sch_chi_sum(ijk, names)
+        
+        self.sch_chi = bn.replace(self.sch_chi, 0, np.nan)
+        
+        self.sch_chi_idx = np.unravel_index(bn.nanargmin(self.sch_chi, 
+                                axis=None), self.sch_chi.shape)
+        
+        self.sch_chi_min = self.sch_chi[self.sch_chi_idx]
+        
+        self.ssp_age_sch = self.sch_age_interp[self.sch_chi_idx[0]]
+        self.ssp_Z_sch = self.sch_Z_interp[self.sch_chi_idx[1]]        
+        self.ssp_alpha_sch = self.sch_alpha_interp[self.sch_chi_idx[2]]
+        
+        return
+    
+###################################################################################################
+    
+    def sch_measure(self, iterate = False):
+        
+        '''A method to calculate the most likely SSP parameters from observed lick indices, using 
+        the models from Schiavon (2007). This part calculates which indices are more than one sigma
+        from the edge of the model predicted index space, and flags these.
+        
+        Parameters
+        ----------
+        iterate (bool, optional):       If iterate is True, then an iterative search will be 
+                                        performed until the result is statistically significant. 
+                                        Defaults to False.
+                                    
+        Attributes
+        ----------
+        sch_idx_check (1d bool array):  The array values show whether the index should be included 
+                                        in the fit.
+        
+        '''
+        
+        self.sch_idx_check = dict()
+        
+        for name in self.sch_names:
+            sch_max = bn.nanmax(self.sch_mods[self.LI_to_sch[name]],axis=0)
+            sch_min = np.nanmin(self.sch_mods[self.LI_to_sch[name]],axis=0)
+            
+            if self.eq_widths[name] - np.abs(self.width_errs[name]) > sch_max:
+                self.sch_idx_check[name] = False
+            elif self.eq_widths[name] + np.abs(self.width_errs[name]) < sch_min:
+                self.sch_idx_check[name] = False
+            else:
+                self.sch_idx_check[name] = True
+            
+        ### Must have at least 5 indices in the model range
+        if np.sum([val for val in self.sch_idx_check.values()]) < 5:
+            self.ssp_age_sch = np.nan
+            self.ssp_Z_sch = np.nan            
+            self.ssp_alpha_sch = np.nan
+            
+        ### Must have at least one Balmer line
+        elif (("Hdelta_A" in self.sch_idx_check == False or 
+               self.sch_idx_check["Hdelta_A"] == False) and 
+              ("Hdelta_F" in self.sch_idx_check == False or 
+               self.sch_idx_check["Hdelta_F"] == False) and
+              ("Hgamma_A" in self.sch_idx_check == False or 
+               self.sch_idx_check["Hgamma_A"] == False) and
+              ("Hgamma_F" in self.sch_idx_check == False or 
+               self.sch_idx_check["Hgamma_F"] == False) and
+              ("Hbeta" in self.sch_idx_check == False or 
+               self.sch_idx_check["Hbeta"] == False)):
+            
+            self.ssp_age_sch = np.nan
+            self.ssp_Z_sch = np.nan            
+            self.ssp_alpha_sch = np.nan
+            
+        ### Must have at least one Fe index
+        elif (("Fe4383" in self.sch_idx_check == False or 
+               self.sch_idx_check["Fe4383"] == False) and 
+              ("Fe4531" in self.sch_idx_check == False or 
+               self.sch_idx_check["Fe4531"] == False) and
+              ("Fe4668" in self.sch_idx_check == False or 
+               self.sch_idx_check["Fe4668"] == False) and
+              ("Fe5015" in self.sch_idx_check == False or 
+               self.sch_idx_check["Fe5015"] == False) and
+              ("Fe5270" in self.sch_idx_check == False or 
+               self.sch_idx_check["Fe5270"] == False) and
+              ("Fe5335" in self.sch_idx_check == False or 
+               self.sch_idx_check["Fe5335"] == False) and
+              ("Fe5406" in self.sch_idx_check == False or 
+               self.sch_idx_check["Fe5406"] == False)):
+            
+            self.ssp_age_sch = np.nan
+            self.ssp_Z_sch = np.nan            
+            self.ssp_alpha_sch = np.nan
+            
+        else:
+            self.sch_measure_sub()
+        
+            
+        # if iterate:
+            
+        # # Following code is an implementation of an iterative search for 
+        # # the minimum, rejecting the greatest outlier at the minimum if
+        # # the result is not significant enough
+        
+        #     print ('')
+        #     print ('Minimum Chi^2')
+        #     print (self.sch_chi[self.sch_chi_idx])
+        #     print ('')
+            
+        #     current_min = scipy_chi2.sf(self.sch_chi[self.sch_chi_idx], 
+        #                                 self.sch_free_param)
+            
+        #     while current_min <= 0.95:
+            
+        #         chi_min = ma.array([((d-m)/e)**2 for d,e,m in zip(self.sch_lick_dat, 
+        #                                               self.sch_lick_err,
+        #                                               self.sch_mod_interp[self.sch_chi_idx])],
+        #                             mask = np.invert(self.sch_idx_check))
+                
+        #         to_remove = bn.nanmax(chi_min[~chi_min.mask])
+        #         for i, chi in enumerate(chi_min):
+        #             if chi == to_remove:
+        #                 self.sch_idx_check[i] = False
+        
+        #         self.sch_measure_sub()
+                
+        #         print ('')
+        #         print ('Minimum Chi^2')
+        #         print (self.sch_chi[self.sch_chi_idx])
+        #         print ('')
+                
+        #         current_min = scipy_chi2.sf(self.sch_chi[self.sch_chi_idx], 
+        #                                     self.sch_free_param)
+                
+        #         print ('')
+        #         print ('Probability')
+        #         print (current_min)
+        #         print ('')
+        
+            
+        return
+>>>>>>> 7825a90... Previous work
     
 ###################################################################################################
                                         
@@ -1295,6 +1916,7 @@ class SSP_Params():
         
         if hasattr(self, 'tmj_chi'):
             
+<<<<<<< HEAD
             # cols = ["0.6", "k", "red"]
             # cols = ["red", "k", "0.6"]
             # cmap1 = colors.LinearSegmentedColormap.from_list("mycmap", cols)
@@ -1309,11 +1931,22 @@ class SSP_Params():
                 cmap=plt.cm.jet,
                 # cmap=cmap1
             )
+=======
+            plt.figure(figsize=(20,10))
+            plt.imshow(self.tmj_chi[self.tmj_chi_idx[0], :, :],
+                       norm=colors.LogNorm(vmin=1, vmax=1000),
+                       cmap=plt.cm.jet, 
+                        extent = [self.tmj_alpha_interp[0], 
+                                  self.tmj_alpha_interp[-1],
+                                  self.tmj_Z_interp[0], self.tmj_Z_interp[-1]], 
+                        origin = 'lower', aspect = 1/3.65)
+>>>>>>> 7825a90... Previous work
             
             colorbar = plt.colorbar()
             colorbar.set_label(r"$\chi^2_{\nu}$", 
                                fontsize=14, rotation=0, y=1.05, labelpad=-40)
             
+<<<<<<< HEAD
             plt.contour(Z, alpha, self.tmj_chi[self.tmj_chi_idx[0], :, :], 
                         levels=[self.tmj_chi[self.tmj_chi_idx] + 1,
                                 self.tmj_chi[self.tmj_chi_idx] + 3.5], 
@@ -1323,6 +1956,20 @@ class SSP_Params():
                         self.tmj_alpha_interp[self.tmj_chi_idx[2]], color='r')
             plt.xlabel(r'$[Z/H]$', fontsize=14)
             plt.ylabel(r'$[\alpha/\rm{Fe}]$', fontsize=14)
+=======
+            plt.contour(self.tmj_chi[self.tmj_chi_idx[0], :, :], 
+                        levels=[self.tmj_chi[self.tmj_chi_idx] + 1,
+                                self.tmj_chi[self.tmj_chi_idx] + 3.5], 
+                        colors='white', alpha=1.0,
+                        extent = [self.tmj_alpha_interp[0], 
+                                  self.tmj_alpha_interp[-1], self.tmj_Z_interp[0], 
+                                  self.tmj_Z_interp[-1]], origin = 'lower')
+            
+            plt.scatter(self.tmj_alpha_interp[self.tmj_chi_idx[2]],
+                        self.tmj_Z_interp[self.tmj_chi_idx[1]], color='r')
+            plt.xlabel(r'$[\alpha/\rm{Fe}]$', fontsize=14)
+            plt.ylabel(r'$[Z/H]$', fontsize=14)
+>>>>>>> 7825a90... Previous work
             plt.show()
             
             plt.figure(figsize=(15,10))
@@ -1476,10 +2123,17 @@ class SSP_Params():
             try:
                 self.ssp_age_tmj_bounds = [tmj_age_region[0], tmj_age_region[-1]]
                 
+<<<<<<< HEAD
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_tmj)
                     traceback.print_exc(file = f)
+=======
+            except:
+                with open(self.err_log_file, 'a') as myfile:
+                    myfile.write(err_msg_tmj)
+                    traceback.print_exc(file = myfile)
+>>>>>>> 7825a90... Previous work
                 logging.exception (err_msg_tmj)
                 
                 self.ssp_age_tmj_bounds = [np.nan, np.nan]
@@ -1490,10 +2144,17 @@ class SSP_Params():
             try:
                 self.ssp_Z_tmj_bounds = [tmj_Z_region[0], tmj_Z_region[-1]]
                 
+<<<<<<< HEAD
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_tmj)
                     traceback.print_exc(file = f)
+=======
+            except:
+                with open(self.err_log_file, 'a') as myfile:
+                    myfile.write(err_msg_tmj)
+                    traceback.print_exc(file = myfile)
+>>>>>>> 7825a90... Previous work
                 logging.exception (err_msg_tmj)
                 
                 self.ssp_z_tmj_bounds = [np.nan, np.nan]
@@ -1504,10 +2165,17 @@ class SSP_Params():
             try:
                 self.ssp_alpha_tmj_bounds = [tmj_alpha_region[0], tmj_alpha_region[-1]]
                 
+<<<<<<< HEAD
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_tmj)
                     traceback.print_exc(file = f)
+=======
+            except:
+                with open(self.err_log_file, 'a') as myfile:
+                    myfile.write(err_msg_tmj)
+                    traceback.print_exc(file = myfile)
+>>>>>>> 7825a90... Previous work
                 logging.exception (err_msg_tmj)
                 
                 self.ssp_alpha_tmj_bounds = [np.nan, np.nan]
@@ -1523,10 +2191,17 @@ class SSP_Params():
             try:
                 self.ssp_age_sch_bounds = [sch_age_region[0], sch_age_region[-1]]
                 
+<<<<<<< HEAD
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_sch)
                     traceback.print_exc(file = f)
+=======
+            except:
+                with open(self.err_log_file, 'a') as myfile:
+                    myfile.write(err_msg_sch)
+                    traceback.print_exc(file = myfile)
+>>>>>>> 7825a90... Previous work
                 logging.exception (err_msg_sch)
                 
                 self.ssp_age_sch_bounds = [np.nan, np.nan]
@@ -1537,10 +2212,17 @@ class SSP_Params():
             try:
                 self.ssp_Z_sch_bounds = [sch_Z_region[0], sch_Z_region[-1]]
                 
+<<<<<<< HEAD
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_tmj)
                     traceback.print_exc(file = f)
+=======
+            except:
+                with open(self.err_log_file, 'a') as myfile:
+                    myfile.write(err_msg_sch)
+                    traceback.print_exc(file = myfile)
+>>>>>>> 7825a90... Previous work
                 logging.exception (err_msg_sch)
                 
                 self.ssp_z_sch_bounds = [np.nan, np.nan]
@@ -1551,10 +2233,17 @@ class SSP_Params():
             try:
                 self.ssp_alpha_sch_bounds = [sch_alpha_region[0], sch_alpha_region[-1]]
                 
+<<<<<<< HEAD
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_tmj)
                     traceback.print_exc(file = f)
+=======
+            except:
+                with open(self.err_log_file, 'a') as myfile:
+                    myfile.write(err_msg_sch)
+                    traceback.print_exc(file = myfile)
+>>>>>>> 7825a90... Previous work
                 logging.exception (err_msg_sch)
                 
                 self.ssp_alpha_sch_bounds = [np.nan, np.nan]

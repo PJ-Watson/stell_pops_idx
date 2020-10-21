@@ -68,7 +68,11 @@ class Convolutions():
     '''
     
     
+<<<<<<< HEAD
     def __init__(self, flux, lam, vel, sigma, z, FWHM_blue=2.6556, FWHM_red=1.5917, 
+=======
+    def __init__(self, lam, flux, vel, sigma, z, FWHM_blue=2.6556, FWHM_red=1.5917, 
+>>>>>>> 7825a90... Previous work
                  resolution = 8.4, system = 'IDS', flux_err = None):
         
         self.c = 299792.458
@@ -132,6 +136,7 @@ class Convolutions():
                     = self.LIS_broadening(key)
                     
         if self.system == 'IDS':
+<<<<<<< HEAD
             self.output = {
                 "fluxes_convolved":self.IDS_flux, 
                 "fluxes_convolved_err":self.IDS_flux_err,
@@ -143,6 +148,11 @@ class Convolutions():
                 "fluxes_convolved_err":self.LIS_flux_err,
                 "convolution_flags":self.LIS_flag,
                 }
+=======
+            self.output = (self.IDS_flux, self.IDS_flux_err, self.IDS_flag)
+        else:
+            self.output = (self.LIS_flux, self.LIS_flux_err, self.LIS_flag)
+>>>>>>> 7825a90... Previous work
             
         return
         

@@ -15,17 +15,28 @@ import ppxf.ppxf_util as util
 import astropy.io.fits as pf
 from astropy.table import Table
 
+<<<<<<< HEAD
 from pathlib import Path
 
+=======
+>>>>>>> 7825a90... Previous work
 # import numpy.lib.recfunctions as rf
 
 import matplotlib.pyplot as plt
 
+<<<<<<< HEAD
 import glob, logging, os, pickle, copy, pathlib
 
 from stell_pops_idx.tools_eq_width import Index_Measure, Spectrum_Cut
 
 from stell_pops_idx.tools_convolution import Convolutions
+=======
+import glob, logging, os, pickle, copy
+
+from tools_eq_width import Index_Measure, Spectrum_Cut
+
+from tools_convolution import Convolutions
+>>>>>>> 7825a90... Previous work
 
 ###################################################################################################
 
@@ -112,7 +123,10 @@ class Dispersion_Correction():
         
         self.temp_dir = temp_dir
         self.out_dir = out_dir
+<<<<<<< HEAD
         
+=======
+>>>>>>> 7825a90... Previous work
         self.MILES_FWHM = MILES_FWHM
         
         self.sigma_min = sigma_min
@@ -121,7 +135,10 @@ class Dispersion_Correction():
         self.out_sig_samples = output_sig_samples
         self.out_ages = output_ages
         
+<<<<<<< HEAD
         
+=======
+>>>>>>> 7825a90... Previous work
         ### Note that no exceptions are caught in the main code.
         ### This is intentional, as any errors here must be resolved 
         ### before running other tools, such as SSP_params.
@@ -132,7 +149,11 @@ class Dispersion_Correction():
             
         else:
             try:
+<<<<<<< HEAD
                 self.bands = Table.read('Lick_Indices_def.txt', format = 'ascii')
+=======
+                self.bands = Table.read('templates/Lick_Indices.txt', format = 'ascii')
+>>>>>>> 7825a90... Previous work
                 
             except Exception as e:
                 logging.exception("Failed to initialise index definitions.")
@@ -140,15 +161,25 @@ class Dispersion_Correction():
         
         if not re_run:
             try:
+<<<<<<< HEAD
                 
                 self.age_vals = np.load(self.out_dir / "age_range.npy")
                 self.Z_vals = np.load(self.out_dir / "Z_range.npy")
                 self.sigma_range = np.load(self.out_dir / "sigma_range.npy")
+=======
+                self.age_vals = np.load(self.out_dir+"/age_range.npy")
+                self.Z_vals = np.load(self.out_dir+"/Z_range.npy")
+                self.sigma_range = np.load(self.out_dir+"/sigma_range.npy")
+>>>>>>> 7825a90... Previous work
                 self.index_array = dict()
                 
                 for n in self.bands["Name"]:
                     self.index_array[n] = \
+<<<<<<< HEAD
                         np.load(self.out_dir.joinpath("full_{0}.npy".format(n)))
+=======
+                        np.load(self.out_dir+"/full_{0}.npy".format(n))
+>>>>>>> 7825a90... Previous work
                       
             except Exception as e:
                 print ("Base correction files could not be loaded.\n"
@@ -159,7 +190,11 @@ class Dispersion_Correction():
             finally:
                 try:
                     for age in self.out_ages:
+<<<<<<< HEAD
                         with open(self.out_dir.joinpath("corr_{0:04.1f}_gyr.pkl".format(age)), 
+=======
+                        with open(self.out_dir+"/corr_{0:04.1f}_gyr.pkl".format(age), 
+>>>>>>> 7825a90... Previous work
                                   'rb') as outfile:
                             pickle.load(outfile)
                     print ("Correction tables already created for required ages.\n")
@@ -226,10 +261,13 @@ class Dispersion_Correction():
         
         for i, temp_path in enumerate(self.temp_dir):
             
+<<<<<<< HEAD
             temp_path = Path(temp_path)
             
             temp_name = temp_path.parts[-1]
             
+=======
+>>>>>>> 7825a90... Previous work
             # try:
             #     temp_name = temp_path.split("\\")[-1]
             #     print ("first")
@@ -239,12 +277,18 @@ class Dispersion_Correction():
             
             # print (temp_name)
             
+<<<<<<< HEAD
             # temp_name = temp_path.split("/")[-1]
             
             Z_str = temp_name[8:13]
             # print (temp_path)
             # print (temp_name)
             # print (Z_str)
+=======
+            temp_name = temp_path.split("\\")[-1]
+            
+            Z_str = temp_name[8:13]
+>>>>>>> 7825a90... Previous work
             if Z_str[0] == "m":
                 Z = - np.float(Z_str[1:])
             else:
@@ -254,6 +298,7 @@ class Dispersion_Correction():
             
             template_details.append([temp_path, age, Z])
         
+<<<<<<< HEAD
         self.age_vals = np.sort(np.unique(
             [row[1] for row in template_details]
         ))
@@ -263,6 +308,10 @@ class Dispersion_Correction():
         
         # print (len(self.age_vals))
         # print (len(self.Z_vals))
+=======
+        self.age_vals = np.sort(np.unique([row[1] for row in template_details]))
+        self.Z_vals = np.sort(np.unique([row[2] for row in template_details]))
+>>>>>>> 7825a90... Previous work
         
         self.sigma_range = np.linspace(self.sigma_min, self.sigma_max, 
                                        num = self.mod_sig_samples)
@@ -270,11 +319,16 @@ class Dispersion_Correction():
         self.index_array = dict()
         
         for n in self.bands["Name"]:
+<<<<<<< HEAD
             self.index_array[n] = np.empty((
                 len(self.age_vals), 
                 len(self.Z_vals),           
                 self.mod_sig_samples,
             )) 
+=======
+            self.index_array[n] = np.empty((len(self.age_vals), len(self.Z_vals), 
+                                            self.mod_sig_samples)) 
+>>>>>>> 7825a90... Previous work
         
         # self.index_array = np.empty((len(self.age_vals), len(self.Z_vals), 
         #                              self.mod_sig_samples, len(self.bands)))
@@ -290,6 +344,7 @@ class Dispersion_Correction():
             hdr = temp_FITS[0].header
             
             temp_spec = (temp_FITS[0].data).reshape((4300,))
+<<<<<<< HEAD
             temp_lam = hdr['CRVAL1']+ hdr['CDELT1']*(np.arange(hdr['NAXIS1']) 
                                                        + 1 - hdr['CRPIX1'])
         
@@ -305,12 +360,27 @@ class Dispersion_Correction():
                 system = 'IDS', 
                 flux_err = SC.output["fluxes_err"],
                 )
+=======
+            temp_lam = hdr['CRVAL1'] + hdr['CDELT1'] *(np.arange(hdr['NAXIS1']) 
+                                                       + 1 - hdr['CRPIX1'])
+        
+            SC = Spectrum_Cut(temp_spec, temp_lam, bands = self.bands)
+            temp_specs, lams, res = SC.results
+        
+            ### This is the template at the Lick/IDS resolution
+            conv_obj = Convolutions(lams, temp_specs, 0, 0, 0, 
+                                    FWHM_blue = self.MILES_FWHM, 
+                                    FWHM_red = self.MILES_FWHM,
+                                    system = 'IDS', flux_err = res)
+            temp_conv, res_conv, base_flags = conv_obj.output
+>>>>>>> 7825a90... Previous work
         
             # if row[1] <= 5 and row[1] >= 4:
             #     ### Measure the equivalent widths of the indices
             #     base_IM = Index_Measure(lams, temp_conv, res_conv, plot = True,
             #                             bands = self.bands, no_error = True)
             # else:
+<<<<<<< HEAD
             base_IM = Index_Measure(
                 conv_obj.output["fluxes_convolved"],
                 SC.output["wavelengths"], 
@@ -318,11 +388,16 @@ class Dispersion_Correction():
                 bands = self.bands,
                 no_error = True,
                 )
+=======
+            base_IM = Index_Measure(lams, temp_conv, res_conv,
+                                        bands = self.bands, no_error = True)
+>>>>>>> 7825a90... Previous work
             base_indices = base_IM.eq_width
             
             
             for j, sigma in enumerate(self.sigma_range):
                 
+<<<<<<< HEAD
                 vel_sigma = temp_lam * (
                     np.sqrt((sigma + self.c)/
                             (self.c - sigma)) - 1)/hdr["CDELT1"]
@@ -347,6 +422,21 @@ class Dispersion_Correction():
                     system = 'IDS', 
                     flux_err = disp_SC.output["fluxes_err"],
                     )
+=======
+                vel_sigma = temp_lam * (np.sqrt((sigma + self.c)/
+                                               (self.c - sigma)) - 1)/hdr["CDELT1"]
+                
+                temp_disp = util.gaussian_filter1d(temp_spec, vel_sigma)
+                
+                SC = Spectrum_Cut(temp_disp, temp_lam, bands = self.bands)
+                disp_specs, lams, res = SC.results
+            
+                ### This is the template at the Lick/IDS resolution
+                disp_conv_obj = Convolutions(lams, disp_specs, 0, sigma, 0, 
+                                             FWHM_blue = self.MILES_FWHM, 
+                                             FWHM_red = self.MILES_FWHM,
+                                             system = 'IDS', flux_err = res)
+>>>>>>> 7825a90... Previous work
                 temp_conv_disp, res_conv_disp, disp_flags = disp_conv_obj.output
             
                 ### Measure the equivalent widths of the indices
@@ -359,6 +449,7 @@ class Dispersion_Correction():
                 #     plt.show()
                     
                 # else:
+<<<<<<< HEAD
                 # disp_IM = Index_Measure(lams, temp_conv_disp, res_conv_disp, 
                 #                         bands = self.bands, no_error = True)
                 disp_IM = Index_Measure(
@@ -371,6 +462,13 @@ class Dispersion_Correction():
                 
                 for n, u in zip(self.bands["Name"], self.bands["Units"]):
                     if disp_conv_obj.output["convolution_flags"][n] == 0:
+=======
+                disp_IM = Index_Measure(lams, temp_conv_disp, res_conv_disp, 
+                                        bands = self.bands, no_error = True)
+                
+                for n, u in zip(self.bands["Name"], self.bands["Units"]):
+                    if disp_flags[n] == 0:
+>>>>>>> 7825a90... Previous work
                         self.index_array[n][age_idx, Z_idx, j] = np.nan
                     elif u == 0:
                         val = base_indices[n]/disp_IM.eq_width[n]
@@ -391,6 +489,7 @@ class Dispersion_Correction():
                 #         self.index_array[age_idx,Z_idx,j,i] = base - new
                             
             temp_FITS.close()
+<<<<<<< HEAD
                                 
         self.out_dir.mkdir(parents=True, exist_ok=True)
         
@@ -403,6 +502,18 @@ class Dispersion_Correction():
                 self.out_dir.joinpath("full_{0}.npy".format(n)), 
                 self.index_array[n]
             )
+=======
+                        
+        if not os.path.exists(self.out_dir+"/"):
+            os.mkdir(self.out_dir+"/")
+        
+        np.save(self.out_dir+"sigma_range.npy", self.sigma_range)
+        np.save(self.out_dir+"age_range.npy", self.age_vals)
+        np.save(self.out_dir+"Z_range.npy", self.Z_vals)
+        
+        for n in self.bands["Name"]:
+            np.save(self.out_dir+"full_{0}.npy".format(n), self.index_array[n])
+>>>>>>> 7825a90... Previous work
         
 ###################################################################################################
                         
@@ -578,7 +689,11 @@ class Dispersion_Correction():
                     
                     age_corr_dict[n][i] = avg
             
+<<<<<<< HEAD
             with open(self.out_dir.joinpath("corr_{0:04.1f}_gyr.pkl".format(age)), 
+=======
+            with open(self.out_dir+"/corr_{0:04.1f}_gyr.pkl".format(age), 
+>>>>>>> 7825a90... Previous work
                       'wb') as outfile:
                 pickle.dump(age_corr_dict, outfile)
         
@@ -587,6 +702,7 @@ class Dispersion_Correction():
     
 ###################################################################################################
 
+<<<<<<< HEAD
 def get_files(pattern):
     
     all_files = [] 
@@ -610,6 +726,18 @@ def get_files(pattern):
     # string_out = [os.fspath(a) for a in all_files]
     
     return all_files
+=======
+def get_files(folder, pattern):
+    
+    all_files = [] 
+    
+    for ext in pattern: 
+        all_files.extend(folder.glob(ext))
+        
+    string_out = [os.fspath(a) for a in all_files]
+    
+    return string_out
+>>>>>>> 7825a90... Previous work
 
 
 def poly_fn(coef, x):
@@ -623,10 +751,16 @@ def poly_fn(coef, x):
 
 
 
+<<<<<<< HEAD
 def corr_fit(age_list, subset_dir, out_dir, bands=None):
     
     if bands==None:
         bands = Table.read('templates/Lick_Indices.txt', format = 'ascii')
+=======
+def corr_fit(age_list):
+    
+    bands = Table.read('templates/Lick_Indices.txt', format = 'ascii')
+>>>>>>> 7825a90... Previous work
     
     for age in age_list:
         
@@ -634,9 +768,15 @@ def corr_fit(age_list, subset_dir, out_dir, bands=None):
         #           "corr_{0:04.1f}_gyr.pkl".format(age), 
         #           'rb') as outfile:
         #     corr_tab_alpha_0 = pickle.load(outfile)
+<<<<<<< HEAD
         # print (out_dir)
         with open(subset_dir.joinpath(
                   "corr_{0:04.1f}_gyr.pkl".format(age)), 
+=======
+        
+        with open("templates/vel_disp_corrs/Z_subset__Ep0.40/"+
+                  "corr_{0:04.1f}_gyr.pkl".format(age), 
+>>>>>>> 7825a90... Previous work
                   'rb') as outfile:
             corr_tab_alpha_4 = pickle.load(outfile)
             
@@ -648,7 +788,11 @@ def corr_fit(age_list, subset_dir, out_dir, bands=None):
               
             data = corr_tab_alpha_4[n]
             
+<<<<<<< HEAD
             # print (data)
+=======
+            print (data)
+>>>>>>> 7825a90... Previous work
             
             y = np.ma.masked_array(data, mask = np.isnan(data))
             
@@ -667,7 +811,11 @@ def corr_fit(age_list, subset_dir, out_dir, bands=None):
             
             new_corr[n] = corr.filled()
         
+<<<<<<< HEAD
         with open(out_dir.joinpath("corr_{0:04.1f}_gyr.pkl".format(age)), 
+=======
+        with open("templates/vel_disp_corrs/corr_{0:04.1f}_gyr.pkl".format(age), 
+>>>>>>> 7825a90... Previous work
                   'wb') as outfile:
             pickle.dump(new_corr, outfile)
 
@@ -711,4 +859,8 @@ def plotting_fn():
             
 # plotting_fn() 
 
+<<<<<<< HEAD
             
+=======
+            
+>>>>>>> 7825a90... Previous work
