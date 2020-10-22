@@ -33,12 +33,16 @@ import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
+<<<<<<< HEAD
 import numba
 <<<<<<< HEAD
 import pathlib
 
 import glob, traceback, logging, json, pickle, copy, time
 =======
+=======
+import numba, pathlib
+>>>>>>> 21f2fb2... Minor changes
 
 import glob, traceback, logging, time, json, os, pickle, copy
 >>>>>>> 7825a90... Previous work
@@ -69,6 +73,9 @@ class SSP_Params():
     '''
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 21f2fb2... Minor changes
     def __init__(
             self, 
             equiv_widths, 
@@ -79,6 +86,7 @@ class SSP_Params():
             sigma = None, 
             sig_flags = None,
             tmj_mods = None, 
+<<<<<<< HEAD
             tmj_errs = None,
             # sch_mods = None, 
             tmj_names = None, 
@@ -105,6 +113,18 @@ class SSP_Params():
         self.eq_widths = copy.deepcopy(equiv_widths)
         self.width_errs = width_errs
 >>>>>>> 7825a90... Previous work
+=======
+            sch_mods = None, 
+            tmj_names = None, 
+            sch_names = None,
+            ):
+        
+        self.eq_widths = copy.deepcopy(equiv_widths)
+        self.width_errs = width_errs
+        self.err_log_file = log_file_path
+        
+        self.temp_dir = temp_dir
+>>>>>>> 21f2fb2... Minor changes
         
         ### Sanity check for inputs
         assert self.eq_widths.keys() == self.width_errs.keys(), \
@@ -163,8 +183,6 @@ class SSP_Params():
         
         if self.tmj_mods is None and self.sch_mods is None:
             err_msg_init = "Requires at least one model as input."
-            with open(self.err_log_file, 'a') as myfile:
-                myfile.write(err_msg_init)
             raise Exception(err_msg_init)
             
         self.tmj_names = tmj_names
@@ -175,14 +193,10 @@ class SSP_Params():
                 with open("templates/LI_to_sch.json") as infile:
                     self.LI_to_sch = json.load(infile)
                     
-            except Exception as e:
+            except Exception:
                 err_conv_dict_sch = ("Could not load file to translate index "+
                                      "names from Schiavon templates.\n")
-                
-                with open(self.err_log_file, 'a') as myfile:
-                    myfile.write(err_conv_dict_sch)
-                    traceback.print_exc(file = myfile)
-                raise e
+                raise Exception(err_conv_dict_sch)
             
             if self.sch_names is None:
                 self.sch_names = ['Hdelta_F', 'Hdelta_A', 'Hgamma_F', 
@@ -195,15 +209,19 @@ class SSP_Params():
                 with open("templates/LI_to_tmj.json") as infile:
                     self.LI_to_tmj = json.load(infile)
                     
-            except Exception as e:
+            except Exception:
                 err_conv_dict_tmj = ("Could not load file to translate index "+
                                      "names from TMJ templates.\n")
+<<<<<<< HEAD
                 
                 with open(self.err_log_file, 'a') as myfile:
                     myfile.write(err_conv_dict_tmj)
                     traceback.print_exc(file = myfile)
                 raise e
 >>>>>>> 7825a90... Previous work
+=======
+                raise Exception(err_conv_dict_tmj)
+>>>>>>> 21f2fb2... Minor changes
                 
                 
         ### Do everything up to calculating chi^2 using individual indices
@@ -217,6 +235,7 @@ class SSP_Params():
                                   "Fe4383", "Ca4455", "Fe4531", "Fe4668",
                                   "H_beta", "Fe5015", "Mg_1", "Mg_2", 
 <<<<<<< HEAD
+<<<<<<< HEAD
                                   "Mg_b", "Fe5270", "Fe5335", "Fe5406",
                                    "Fe5709", "Fe5782", 
                                    #"Na_D", 
@@ -224,6 +243,11 @@ class SSP_Params():
 =======
                                   "Mg_b", "Fe5270", "Fe5335", "Fe5406"]
 >>>>>>> 7825a90... Previous work
+=======
+                                  "Mg_b", "Fe5270", "Fe5335", "Fe5406",
+                                   "Fe5709", "Fe5782", "Na_D", 
+                                   "TiO_1", "TiO_2"]
+>>>>>>> 21f2fb2... Minor changes
             
         self.hi_res = hi_res
         self.sigma = sigma
@@ -351,6 +375,7 @@ class SSP_Params():
             for name in self.tmj_names:
                 try:
 <<<<<<< HEAD
+<<<<<<< HEAD
                     self.tmj_mod_interp[name] = np.load(
                         self.temp_dir.joinpath(
                             "tmj_interpolated_hi_res/{}.npy".format(name)))
@@ -379,6 +404,11 @@ class SSP_Params():
 =======
                     self.tmj_mod_interp[name] = \
                         np.load("templates/tmj_interpolated_hi_res/{}.npy".format(name))
+=======
+                    self.tmj_mod_interp[name] = np.load(
+                        self.temp_dir.joinpath(
+                            "tmj_interpolated_hi_res/{}.npy".format(name)))
+>>>>>>> 21f2fb2... Minor changes
                     
                 except:
                     
@@ -398,6 +428,7 @@ class SSP_Params():
             
             for name in self.tmj_names:
                 try:
+<<<<<<< HEAD
 <<<<<<< HEAD
                     self.tmj_mod_interp[name] = np.load(
                         self.temp_dir.joinpath(
@@ -427,6 +458,11 @@ class SSP_Params():
 =======
                     self.tmj_mod_interp[name] = \
                         np.load("templates/tmj_interpolated_lo_res/{}.npy".format(name))
+=======
+                    self.tmj_mod_interp[name] = np.load(
+                        self.temp_dir.joinpath(
+                            "tmj_interpolated_lo_res/{}.npy".format(name)))
+>>>>>>> 21f2fb2... Minor changes
                     
                 except:
                     
@@ -624,13 +660,13 @@ class SSP_Params():
         self.tmj_mod_interp[name] = interp
         
         if self.hi_res == True:
-            if not os.path.exists("templates/tmj_interpolated_hi_res/"):
-                os.mkdir("templates/tmj_interpolated_hi_res/")
-            np.save("templates/tmj_interpolated_hi_res/{}.npy".format(name), interp)
+            folder = self.temp_dir.joinpath("tmj_interpolated_hi_res")
+            folder.mkdir(parents=True, exist_ok=True)
         else:            
-            if not os.path.exists("templates/tmj_interpolated_lo_res/"):
-                os.mkdir("templates/tmj_interpolated_lo_res/")
-            np.save("templates/tmj_interpolated_lo_res/{}.npy".format(name), interp)
+            folder = self.temp_dir.joinpath("tmj_interpolated_lo_res")
+            folder.mkdir(parents=True, exist_ok=True)
+            
+        np.save(folder.joinpath("{}.npy".format(name)), interp)
             
         del X,Y,Z, interp
         return
@@ -679,8 +715,9 @@ class SSP_Params():
             
             for name in self.sch_names:
                 try:
-                    self.sch_mod_interp[name] = \
-                        np.load("templates/sch_interpolated_hi_res/{}.npy".format(name))
+                    self.sch_mod_interp[name] = np.load(
+                        self.temp_dir.joinpath(
+                            "sch_interpolated_hi_res/{}.npy".format(name)))
                     
                 except:
                     
@@ -699,8 +736,9 @@ class SSP_Params():
             
             for name in self.sch_names:
                 try:
-                    self.sch_mod_interp[name] = \
-                        np.load("templates/sch_interpolated_lo_res/{}.npy".format(name))
+                    self.sch_mod_interp[name] = np.load(
+                        self.temp_dir.joinpath(
+                            "sch_interpolated_lo_res/{}.npy".format(name)))
                     
                 except:
                     
@@ -733,14 +771,14 @@ class SSP_Params():
         self.sch_mod_interp[name] = interp
         
         if self.hi_res == True:
-            if not os.path.exists("templates/sch_interpolated_hi_res/"):
-                os.mkdir("templates/sch_interpolated_hi_res/")
-            np.save("templates/sch_interpolated_hi_res/{}.npy".format(name), interp)
+            folder = self.temp_dir.joinpath("sch_interpolated_hi_res")
+            folder.mkdir(parents=True, exist_ok=True)
         else:            
-            if not os.path.exists("templates/sch_interpolated_lo_res/"):
-                os.mkdir("templates/sch_interpolated_lo_res/")
-            np.save("templates/sch_interpolated_lo_res/{}.npy".format(name), interp)
+            folder = self.temp_dir.joinpath("sch_interpolated_lo_res")
+            folder.mkdir(parents=True, exist_ok=True)
             
+        np.save(folder.joinpath("{}.npy".format(name)), interp)
+        
         del X,Y,Z, interp
         return
 >>>>>>> 7825a90... Previous work
@@ -1017,12 +1055,9 @@ class SSP_Params():
                 
                 ages = [float(t.split("/")[-1][5:9]) for t in templates]
                 
-        except Exception as e:
+        except Exception:
             err_corr_files = ("Could not load dispersion correction files.")
-            with open(self.err_log_file, 'a') as myfile:
-                myfile.write(err_corr_files)
-                traceback.print_exc(file = myfile)
-            raise e
+            raise Exception(err_corr_files)
         
         
         # print (templates)
@@ -1136,25 +1171,31 @@ class SSP_Params():
         
         
         try:
-            templates = glob.glob("templates\\vel_disp_corrs\\corr_????_gyr.pkl")
+            template_gen = self.temp_dir.joinpath(
+                "vel_disp_corrs").expanduser().glob("*.pkl")
+            templates = [t.__str__() for t in template_gen]
             templates.sort()
             
             ages = [float(t.split("\\")[-1][5:9]) for t in templates]
             
-            if len(templates) == 0:
+            # if len(templates) == 0:
                 
-                templates = glob.glob("templates/vel_disp_corrs/corr_????_gyr.pkl")
-                templates.sort()
+            #     templates = glob.glob("templates/vel_disp_corrs/corr_????_gyr.pkl")
+            #     templates.sort()
                 
-                ages = [float(t.split("/")[-1][5:9]) for t in templates]
+            #     ages = [float(t.split("/")[-1][5:9]) for t in templates]
                 
-        except Exception as e:
+        except Exception:
             err_corr_files = ("Could not load dispersion correction files.")
+<<<<<<< HEAD
             with open(self.err_log_file, 'a') as myfile:
                 myfile.write(err_corr_files)
                 traceback.print_exc(file = myfile)
             raise e
 >>>>>>> 7825a90... Previous work
+=======
+            raise Exception(err_corr_files)
+>>>>>>> 21f2fb2... Minor changes
         
         
         for p, a in zip(templates, ages):
@@ -2124,16 +2165,22 @@ class SSP_Params():
                 self.ssp_age_tmj_bounds = [tmj_age_region[0], tmj_age_region[-1]]
                 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 21f2fb2... Minor changes
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_tmj)
                     traceback.print_exc(file = f)
+<<<<<<< HEAD
 =======
             except:
                 with open(self.err_log_file, 'a') as myfile:
                     myfile.write(err_msg_tmj)
                     traceback.print_exc(file = myfile)
 >>>>>>> 7825a90... Previous work
+=======
+>>>>>>> 21f2fb2... Minor changes
                 logging.exception (err_msg_tmj)
                 
                 self.ssp_age_tmj_bounds = [np.nan, np.nan]
@@ -2145,16 +2192,22 @@ class SSP_Params():
                 self.ssp_Z_tmj_bounds = [tmj_Z_region[0], tmj_Z_region[-1]]
                 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 21f2fb2... Minor changes
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_tmj)
                     traceback.print_exc(file = f)
+<<<<<<< HEAD
 =======
             except:
                 with open(self.err_log_file, 'a') as myfile:
                     myfile.write(err_msg_tmj)
                     traceback.print_exc(file = myfile)
 >>>>>>> 7825a90... Previous work
+=======
+>>>>>>> 21f2fb2... Minor changes
                 logging.exception (err_msg_tmj)
                 
                 self.ssp_z_tmj_bounds = [np.nan, np.nan]
@@ -2166,16 +2219,22 @@ class SSP_Params():
                 self.ssp_alpha_tmj_bounds = [tmj_alpha_region[0], tmj_alpha_region[-1]]
                 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 21f2fb2... Minor changes
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_tmj)
                     traceback.print_exc(file = f)
+<<<<<<< HEAD
 =======
             except:
                 with open(self.err_log_file, 'a') as myfile:
                     myfile.write(err_msg_tmj)
                     traceback.print_exc(file = myfile)
 >>>>>>> 7825a90... Previous work
+=======
+>>>>>>> 21f2fb2... Minor changes
                 logging.exception (err_msg_tmj)
                 
                 self.ssp_alpha_tmj_bounds = [np.nan, np.nan]
@@ -2192,16 +2251,22 @@ class SSP_Params():
                 self.ssp_age_sch_bounds = [sch_age_region[0], sch_age_region[-1]]
                 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 21f2fb2... Minor changes
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_sch)
                     traceback.print_exc(file = f)
+<<<<<<< HEAD
 =======
             except:
                 with open(self.err_log_file, 'a') as myfile:
                     myfile.write(err_msg_sch)
                     traceback.print_exc(file = myfile)
 >>>>>>> 7825a90... Previous work
+=======
+>>>>>>> 21f2fb2... Minor changes
                 logging.exception (err_msg_sch)
                 
                 self.ssp_age_sch_bounds = [np.nan, np.nan]
@@ -2213,16 +2278,22 @@ class SSP_Params():
                 self.ssp_Z_sch_bounds = [sch_Z_region[0], sch_Z_region[-1]]
                 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 21f2fb2... Minor changes
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_tmj)
                     traceback.print_exc(file = f)
+<<<<<<< HEAD
 =======
             except:
                 with open(self.err_log_file, 'a') as myfile:
                     myfile.write(err_msg_sch)
                     traceback.print_exc(file = myfile)
 >>>>>>> 7825a90... Previous work
+=======
+>>>>>>> 21f2fb2... Minor changes
                 logging.exception (err_msg_sch)
                 
                 self.ssp_z_sch_bounds = [np.nan, np.nan]
@@ -2234,16 +2305,22 @@ class SSP_Params():
                 self.ssp_alpha_sch_bounds = [sch_alpha_region[0], sch_alpha_region[-1]]
                 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 21f2fb2... Minor changes
             except:                    
                 with self.err_log_file.open("a") as f:
                     f.write(err_msg_tmj)
                     traceback.print_exc(file = f)
+<<<<<<< HEAD
 =======
             except:
                 with open(self.err_log_file, 'a') as myfile:
                     myfile.write(err_msg_sch)
                     traceback.print_exc(file = myfile)
 >>>>>>> 7825a90... Previous work
+=======
+>>>>>>> 21f2fb2... Minor changes
                 logging.exception (err_msg_sch)
                 
                 self.ssp_alpha_sch_bounds = [np.nan, np.nan]

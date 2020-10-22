@@ -51,11 +51,18 @@ def run_all(
         ):   
     
     out_dir = pathlib.Path(output_directory)
-    print (out_dir.is_dir())
+    out_subdir = pathlib.Path(output_directory).joinpath("{}".format(output_id))
+    
+    # print (out_subdir.exists())
+    out_subdir.mkdir(parents=True, exist_ok=True)
     
     start_time = time.time()
+<<<<<<< HEAD
     err_log_file = out_dir.joinpath("errors.log")
 >>>>>>> ce01334... New
+=======
+    err_log_file = out_subdir.joinpath("errors.log")
+>>>>>>> 21f2fb2... Minor changes
     init_msg = "{} - analysis started.\n\n".format(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
     with err_log_file.open("w") as f:
             f.write(init_msg)
@@ -85,10 +92,14 @@ def run_all(
             log_rebinned_data["good_pixels"] = SF.results["good_pixel_mask"]
             
 <<<<<<< HEAD
+<<<<<<< HEAD
             lrd_table_path = out_subdir.joinpath("{}_log_rebinned_data.fits".format(output_id))
 =======
             lrd_table_path = out_dir.joinpath("{}_log_rebinned_data.fits".format(output_id))
 >>>>>>> ce01334... New
+=======
+            lrd_table_path = out_subdir.joinpath("{}_log_rebinned_data.fits".format(output_id))
+>>>>>>> 21f2fb2... Minor changes
             log_rebinned_data.write(lrd_table_path, overwrite = True)            
             
         c = 299792.458
@@ -104,6 +115,7 @@ def run_all(
         err_msg = "{:.2f} - Failure in spectral fitting module.\n\n".format(
             time.time() - start_time)
 <<<<<<< HEAD
+<<<<<<< HEAD
         with err_log_file.open("a") as f:
             f.write(err_msg)
             traceback.print_exc(file = f)
@@ -112,6 +124,11 @@ def run_all(
             logfile.write(err_msg)
             traceback.print_exc(file = logfile)
 >>>>>>> ce01334... New
+=======
+        with err_log_file.open("a") as f:
+            f.write(err_msg)
+            traceback.print_exc(file = f)
+>>>>>>> 21f2fb2... Minor changes
         raise Exception(err_msg)
         
     try:
@@ -139,6 +156,7 @@ def run_all(
         err_msg = "{:.2f} - Failure in spectral cutting and convolution module.\n\n".format(
             time.time() - start_time)
 <<<<<<< HEAD
+<<<<<<< HEAD
         with err_log_file.open("a") as f:
             f.write(err_msg)
             traceback.print_exc(file = f)
@@ -147,6 +165,11 @@ def run_all(
             logfile.write(err_msg)
             traceback.print_exc(file = logfile)
 >>>>>>> ce01334... New
+=======
+        with err_log_file.open("a") as f:
+            f.write(err_msg)
+            traceback.print_exc(file = f)
+>>>>>>> 21f2fb2... Minor changes
         raise Exception(err_msg)
         
     try:
@@ -165,6 +188,7 @@ def run_all(
         err_msg = "{:.2f} - Failed to measure line indices.\n\n".format(
             time.time() - start_time)
 <<<<<<< HEAD
+<<<<<<< HEAD
         with err_log_file.open("a") as f:
             f.write(err_msg)
             traceback.print_exc(file = f)
@@ -182,10 +206,22 @@ def run_all(
         
     try:
 >>>>>>> ce01334... New
+=======
+        with err_log_file.open("a") as f:
+            f.write(err_msg)
+            traceback.print_exc(file = f)
+        raise Exception(err_msg)
+        
+    try:
+        
+        template_dir = out_dir.joinpath("models_used")
+        
+>>>>>>> 21f2fb2... Minor changes
         ### Determine the SSP parameters        
         SSP = SSP_Params(
             IM.results["equivalent_widths"],
             IM.results["equivalent_widths_err"],
+<<<<<<< HEAD
 <<<<<<< HEAD
             temp_dir,
             err_log_file,
@@ -199,11 +235,20 @@ def run_all(
             tmj_mods = reg_SSP_models, 
             hi_res = False, 
 >>>>>>> ce01334... New
+=======
+            template_dir,
+            err_log_file,
+            sig_flags=conv_obj.output["convolution_flags"],
+            sigma=SF.results["sigma"],
+            tmj_mods = reg_SSP_models, 
+            hi_res = True, 
+>>>>>>> 21f2fb2... Minor changes
             )
         
     except:
         err_msg = "{:.2f} - Failed to determine optimal SSP parameters.\n\n".format(
             time.time() - start_time)
+<<<<<<< HEAD
 <<<<<<< HEAD
         with err_log_file.open("a") as f:
             f.write(err_msg)
@@ -213,6 +258,11 @@ def run_all(
             logfile.write(err_msg)
             traceback.print_exc(file = logfile)
 >>>>>>> ce01334... New
+=======
+        with err_log_file.open("a") as f:
+            f.write(err_msg)
+            traceback.print_exc(file = f)
+>>>>>>> 21f2fb2... Minor changes
         raise Exception(err_msg)
         
     try:
@@ -248,6 +298,7 @@ def run_all(
         results_table["SSP_alpha_err_high"] = SSP.ssp_alpha_tmj_bounds[1]
             
         # out_table_path = out_dir.joinpath("{}_output.fits".format(output_id))
+<<<<<<< HEAD
 <<<<<<< HEAD
         out_table_path = out_subdir.joinpath("output.fits")
         results_table.write(
@@ -443,6 +494,9 @@ def run_all_previous_results(
 =======
         out_table_path = out_dir.joinpath("0_output.fits")
 >>>>>>> ce01334... New
+=======
+        out_table_path = out_subdir.joinpath("3_output.fits")
+>>>>>>> 21f2fb2... Minor changes
         results_table.write(
             out_table_path, 
             overwrite=True,
@@ -459,6 +513,7 @@ def run_all_previous_results(
         err_msg = "{:.2f} - Failed to write results to disk.\n\n".format(
             time.time() - start_time)
 <<<<<<< HEAD
+<<<<<<< HEAD
         with err_log_file.open("a") as f:
             f.write(err_msg)
             traceback.print_exc(file = f)
@@ -467,4 +522,9 @@ def run_all_previous_results(
             logfile.write(err_msg)
             traceback.print_exc(file = logfile)
 >>>>>>> ce01334... New
+=======
+        with err_log_file.open("a") as f:
+            f.write(err_msg)
+            traceback.print_exc(file = f)
+>>>>>>> 21f2fb2... Minor changes
         raise Exception(err_msg)
