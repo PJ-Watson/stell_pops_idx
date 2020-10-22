@@ -34,10 +34,13 @@ def run_all(
         ):   
     
     out_dir = pathlib.Path(output_directory)
-    print (out_dir.is_dir())
+    out_subdir = pathlib.Path(output_directory).joinpath("{}".format(output_id))
+    
+    # print (out_subdir.exists())
+    out_subdir.mkdir(parents=True, exist_ok=True)
     
     start_time = time.time()
-    err_log_file = out_dir.joinpath("errors.log")
+    err_log_file = out_subdir.joinpath("errors.log")
     init_msg = "{} - analysis started.\n\n".format(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
     with err_log_file.open("w") as f:
             f.write(init_msg)
@@ -66,7 +69,7 @@ def run_all(
             log_rebinned_data["wavelength"] = SF.results["wavelength"]
             log_rebinned_data["good_pixels"] = SF.results["good_pixel_mask"]
             
-            lrd_table_path = out_dir.joinpath("{}_log_rebinned_data.fits".format(output_id))
+            lrd_table_path = out_subdir.joinpath("{}_log_rebinned_data.fits".format(output_id))
             log_rebinned_data.write(lrd_table_path, overwrite = True)            
             
         c = 299792.458
@@ -81,9 +84,9 @@ def run_all(
     except:
         err_msg = "{:.2f} - Failure in spectral fitting module.\n\n".format(
             time.time() - start_time)
-        with open(err_log_file, 'a') as logfile:
-            logfile.write(err_msg)
-            traceback.print_exc(file = logfile)
+        with err_log_file.open("a") as f:
+            f.write(err_msg)
+            traceback.print_exc(file = f)
         raise Exception(err_msg)
         
     try:
@@ -110,9 +113,9 @@ def run_all(
     except:
         err_msg = "{:.2f} - Failure in spectral cutting and convolution module.\n\n".format(
             time.time() - start_time)
-        with open(err_log_file, 'a') as logfile:
-            logfile.write(err_msg)
-            traceback.print_exc(file = logfile)
+        with err_log_file.open("a") as f:
+            f.write(err_msg)
+            traceback.print_exc(file = f)
         raise Exception(err_msg)
         
     try:
@@ -130,28 +133,33 @@ def run_all(
     except:
         err_msg = "{:.2f} - Failed to measure line indices.\n\n".format(
             time.time() - start_time)
-        with open(err_log_file, 'a') as logfile:
-            logfile.write(err_msg)
-            traceback.print_exc(file = logfile)
+        with err_log_file.open("a") as f:
+            f.write(err_msg)
+            traceback.print_exc(file = f)
         raise Exception(err_msg)
         
     try:
+        
+        template_dir = out_dir.joinpath("models_used")
+        
         ### Determine the SSP parameters        
         SSP = SSP_Params(
             IM.results["equivalent_widths"],
             IM.results["equivalent_widths_err"],
+            template_dir,
+            err_log_file,
             sig_flags=conv_obj.output["convolution_flags"],
             sigma=SF.results["sigma"],
             tmj_mods = reg_SSP_models, 
-            hi_res = False, 
+            hi_res = True, 
             )
         
     except:
         err_msg = "{:.2f} - Failed to determine optimal SSP parameters.\n\n".format(
             time.time() - start_time)
-        with open(err_log_file, 'a') as logfile:
-            logfile.write(err_msg)
-            traceback.print_exc(file = logfile)
+        with err_log_file.open("a") as f:
+            f.write(err_msg)
+            traceback.print_exc(file = f)
         raise Exception(err_msg)
         
     try:
@@ -187,7 +195,7 @@ def run_all(
         results_table["SSP_alpha_err_high"] = SSP.ssp_alpha_tmj_bounds[1]
             
         # out_table_path = out_dir.joinpath("{}_output.fits".format(output_id))
-        out_table_path = out_dir.joinpath("0_output.fits")
+        out_table_path = out_subdir.joinpath("3_output.fits")
         results_table.write(
             out_table_path, 
             overwrite=True,
@@ -196,7 +204,7 @@ def run_all(
     except:
         err_msg = "{:.2f} - Failed to write results to disk.\n\n".format(
             time.time() - start_time)
-        with open(err_log_file, 'a') as logfile:
-            logfile.write(err_msg)
-            traceback.print_exc(file = logfile)
+        with err_log_file.open("a") as f:
+            f.write(err_msg)
+            traceback.print_exc(file = f)
         raise Exception(err_msg)

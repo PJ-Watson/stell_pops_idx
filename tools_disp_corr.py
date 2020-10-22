@@ -19,7 +19,7 @@ from astropy.table import Table
 
 import matplotlib.pyplot as plt
 
-import glob, logging, os, pickle, copy
+import glob, logging, os, pickle, copy, pathlib
 
 from tools_eq_width import Index_Measure, Spectrum_Cut
 
@@ -272,22 +272,30 @@ class Dispersion_Correction():
                                                        + 1 - hdr['CRPIX1'])
         
             SC = Spectrum_Cut(temp_spec, temp_lam, bands = self.bands)
-            temp_specs, lams, res = SC.results
-        
+            
             ### This is the template at the Lick/IDS resolution
-            conv_obj = Convolutions(lams, temp_specs, 0, 0, 0, 
-                                    FWHM_blue = self.MILES_FWHM, 
-                                    FWHM_red = self.MILES_FWHM,
-                                    system = 'IDS', flux_err = res)
-            temp_conv, res_conv, base_flags = conv_obj.output
+            conv_obj = Convolutions(
+                SC.output["fluxes"],
+                SC.output["wavelengths"], 
+                0, 0, 0, 
+                FWHM_blue = self.MILES_FWHM, 
+                FWHM_red = self.MILES_FWHM,
+                system = 'IDS', 
+                flux_err = SC.output["fluxes_err"],
+                )
         
             # if row[1] <= 5 and row[1] >= 4:
             #     ### Measure the equivalent widths of the indices
             #     base_IM = Index_Measure(lams, temp_conv, res_conv, plot = True,
             #                             bands = self.bands, no_error = True)
             # else:
-            base_IM = Index_Measure(lams, temp_conv, res_conv,
-                                        bands = self.bands, no_error = True)
+            base_IM = Index_Measure(
+                conv_obj.output["fluxes_convolved"],
+                SC.output["wavelengths"], 
+                conv_obj.output["fluxes_convolved_err"],
+                bands = self.bands,
+                no_error = True,
+                )
             base_indices = base_IM.eq_width
             
             
@@ -298,14 +306,24 @@ class Dispersion_Correction():
                 
                 temp_disp = util.gaussian_filter1d(temp_spec, vel_sigma)
                 
-                SC = Spectrum_Cut(temp_disp, temp_lam, bands = self.bands)
-                disp_specs, lams, res = SC.results
+                disp_SC = Spectrum_Cut(temp_disp, temp_lam, bands = self.bands)
             
                 ### This is the template at the Lick/IDS resolution
-                disp_conv_obj = Convolutions(lams, disp_specs, 0, sigma, 0, 
-                                             FWHM_blue = self.MILES_FWHM, 
-                                             FWHM_red = self.MILES_FWHM,
-                                             system = 'IDS', flux_err = res)
+                # disp_conv_obj = Convolutions(lams, disp_specs, 0, sigma, 0, 
+                #                              FWHM_blue = self.MILES_FWHM, 
+                #                              FWHM_red = self.MILES_FWHM,
+                #                              system = 'IDS', flux_err = res)
+                disp_conv_obj = Convolutions(
+                    disp_SC.output["fluxes"],
+                    disp_SC.output["wavelengths"], 
+                    0,
+                    sigma, 
+                    0, 
+                    FWHM_blue = self.MILES_FWHM, 
+                    FWHM_red = self.MILES_FWHM,
+                    system = 'IDS', 
+                    flux_err = disp_SC.output["fluxes_err"],
+                    )
                 temp_conv_disp, res_conv_disp, disp_flags = disp_conv_obj.output
             
                 ### Measure the equivalent widths of the indices
@@ -318,11 +336,18 @@ class Dispersion_Correction():
                 #     plt.show()
                     
                 # else:
-                disp_IM = Index_Measure(lams, temp_conv_disp, res_conv_disp, 
-                                        bands = self.bands, no_error = True)
+                # disp_IM = Index_Measure(lams, temp_conv_disp, res_conv_disp, 
+                #                         bands = self.bands, no_error = True)
+                disp_IM = Index_Measure(
+                    disp_conv_obj.output["fluxes_convolved"],
+                    disp_SC.output["wavelengths"], 
+                    disp_conv_obj.output["fluxes_convolved_err"],
+                    bands = self.bands,
+                    no_error = True,
+                    )
                 
                 for n, u in zip(self.bands["Name"], self.bands["Units"]):
-                    if disp_flags[n] == 0:
+                    if disp_conv_obj.output["convolution_flags"][n] == 0:
                         self.index_array[n][age_idx, Z_idx, j] = np.nan
                     elif u == 0:
                         val = base_indices[n]/disp_IM.eq_width[n]
@@ -343,16 +368,15 @@ class Dispersion_Correction():
                 #         self.index_array[age_idx,Z_idx,j,i] = base - new
                             
             temp_FITS.close()
-                        
-        if not os.path.exists(self.out_dir+"/"):
-            os.mkdir(self.out_dir+"/")
+                                
+        self.out_dir.mkdir(parents=True, exist_ok=True)
         
-        np.save(self.out_dir+"sigma_range.npy", self.sigma_range)
-        np.save(self.out_dir+"age_range.npy", self.age_vals)
-        np.save(self.out_dir+"Z_range.npy", self.Z_vals)
+        np.save(self.out_dir.joinpath("sigma_range.npy"), self.sigma_range)
+        np.save(self.out_dir.joinpath("age_range.npy"), self.age_vals)
+        np.save(self.out_dir.joinpath("Z_range.npy"), self.Z_vals)
         
         for n in self.bands["Name"]:
-            np.save(self.out_dir+"full_{0}.npy".format(n), self.index_array[n])
+            np.save(self.out_dir.joinpath("full_{0}.npy".format(n)), self.index_array[n])
         
 ###################################################################################################
                         
@@ -528,7 +552,7 @@ class Dispersion_Correction():
                     
                     age_corr_dict[n][i] = avg
             
-            with open(self.out_dir+"/corr_{0:04.1f}_gyr.pkl".format(age), 
+            with open(self.out_dir.joinpath("corr_{0:04.1f}_gyr.pkl".format(age)), 
                       'wb') as outfile:
                 pickle.dump(age_corr_dict, outfile)
         
@@ -560,9 +584,10 @@ def poly_fn(coef, x):
 
 
 
-def corr_fit(age_list):
+def corr_fit(age_list, subset_dir, out_dir, bands=None):
     
-    bands = Table.read('templates/Lick_Indices.txt', format = 'ascii')
+    if bands==None:
+        bands = Table.read('templates/Lick_Indices.txt', format = 'ascii')
     
     for age in age_list:
         
@@ -570,9 +595,9 @@ def corr_fit(age_list):
         #           "corr_{0:04.1f}_gyr.pkl".format(age), 
         #           'rb') as outfile:
         #     corr_tab_alpha_0 = pickle.load(outfile)
-        
-        with open("templates/vel_disp_corrs/Z_subset__Ep0.40/"+
-                  "corr_{0:04.1f}_gyr.pkl".format(age), 
+        # print (out_dir)
+        with open(subset_dir.joinpath(
+                  "corr_{0:04.1f}_gyr.pkl".format(age)), 
                   'rb') as outfile:
             corr_tab_alpha_4 = pickle.load(outfile)
             
@@ -603,7 +628,7 @@ def corr_fit(age_list):
             
             new_corr[n] = corr.filled()
         
-        with open("templates/vel_disp_corrs/corr_{0:04.1f}_gyr.pkl".format(age), 
+        with open(out_dir.joinpath("corr_{0:04.1f}_gyr.pkl".format(age)), 
                   'wb') as outfile:
             pickle.dump(new_corr, outfile)
 
