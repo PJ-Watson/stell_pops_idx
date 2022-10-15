@@ -310,6 +310,10 @@ class Index_Measure():
         ### Find the array location for the absorption feature
         ab_idx = np.where((lam >= b["Index_1"]) &
                           (lam <= b["Index_2"]))[0]
+        blue_idx = np.where((lam >= b["Blue_1"]) &
+                          (lam <= b["Blue_2"]))[0]
+        red_idx = np.where((lam >= b["Red_1"]) &
+                          (lam <= b["Red_2"]))[0]
             
         ### Check the index falls in the wavelength range
         if (b["Blue_1"] - self.dlam < lam[0]) or \
@@ -322,6 +326,11 @@ class Index_Measure():
         #     eq_width_2 = np.nan
             
         elif np.sum(gpix[ab_idx])/len(gpix[ab_idx]) <= 0.75:
+            eq_width_2 = np.nan
+            
+        elif np.sum(gpix[blue_idx])/len(gpix[blue_idx]) <= 0.75:
+            eq_width_2 = np.nan
+        elif np.sum(gpix[red_idx])/len(gpix[red_idx]) <= 0.75:
             eq_width_2 = np.nan
             
             

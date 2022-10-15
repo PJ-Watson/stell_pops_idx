@@ -15,15 +15,17 @@ import ppxf.ppxf_util as util
 import astropy.io.fits as pf
 from astropy.table import Table
 
+from pathlib import Path
+
 # import numpy.lib.recfunctions as rf
 
 import matplotlib.pyplot as plt
 
 import glob, logging, os, pickle, copy, pathlib
 
-from tools_eq_width import Index_Measure, Spectrum_Cut
+from stell_pops_idx.tools_eq_width import Index_Measure, Spectrum_Cut
 
-from tools_convolution import Convolutions
+from stell_pops_idx.tools_convolution import Convolutions
 
 ###################################################################################################
 
@@ -109,7 +111,7 @@ class Dispersion_Correction():
         self.factor = np.sqrt(8.*np.log(2.))
         
         self.temp_dir = temp_dir
-        self.out_dir = out_dir
+        self.out_dir = Path(out_dir)
         self.MILES_FWHM = MILES_FWHM
         
         self.sigma_min = sigma_min
@@ -117,6 +119,8 @@ class Dispersion_Correction():
         self.mod_sig_samples = model_sig_samples
         self.out_sig_samples = output_sig_samples
         self.out_ages = output_ages
+        
+        print (self.out_dir.parts)
         
         ### Note that no exceptions are caught in the main code.
         ### This is intentional, as any errors here must be resolved 
@@ -136,6 +140,7 @@ class Dispersion_Correction():
         
         if not re_run:
             try:
+                
                 self.age_vals = np.load(self.out_dir+"/age_range.npy")
                 self.Z_vals = np.load(self.out_dir+"/Z_range.npy")
                 self.sigma_range = np.load(self.out_dir+"/sigma_range.npy")
@@ -143,7 +148,7 @@ class Dispersion_Correction():
                 
                 for n in self.bands["Name"]:
                     self.index_array[n] = \
-                        np.load(self.out_dir+"/full_{0}.npy".format(n))
+                        np.load(self.out_dir.joinpath("full_{0}.npy".format(n)))
                       
             except Exception as e:
                 print ("Base correction files could not be loaded.\n"
@@ -154,7 +159,7 @@ class Dispersion_Correction():
             finally:
                 try:
                     for age in self.out_ages:
-                        with open(self.out_dir+"/corr_{0:04.1f}_gyr.pkl".format(age), 
+                        with open(self.out_dir.joinpath("corr_{0:04.1f}_gyr.pkl".format(age)), 
                                   'rb') as outfile:
                             pickle.load(outfile)
                     print ("Correction tables already created for required ages.\n")
@@ -221,6 +226,10 @@ class Dispersion_Correction():
         
         for i, temp_path in enumerate(self.temp_dir):
             
+            temp_path = Path(temp_path)
+            
+            temp_name = temp_path.parts[-1]
+            
             # try:
             #     temp_name = temp_path.split("\\")[-1]
             #     print ("first")
@@ -230,9 +239,12 @@ class Dispersion_Correction():
             
             # print (temp_name)
             
-            temp_name = temp_path.split("\\")[-1]
+            # temp_name = temp_path.split("/")[-1]
             
             Z_str = temp_name[8:13]
+            # print (temp_path)
+            # print (temp_name)
+            # print (Z_str)
             if Z_str[0] == "m":
                 Z = - np.float(Z_str[1:])
             else:
@@ -244,6 +256,9 @@ class Dispersion_Correction():
         
         self.age_vals = np.sort(np.unique([row[1] for row in template_details]))
         self.Z_vals = np.sort(np.unique([row[2] for row in template_details]))
+        
+        print (len(self.age_vals))
+        print (len(self.Z_vals))
         
         self.sigma_range = np.linspace(self.sigma_min, self.sigma_max, 
                                        num = self.mod_sig_samples)
@@ -561,16 +576,16 @@ class Dispersion_Correction():
     
 ###################################################################################################
 
-def get_files(folder, pattern):
+def get_files(path, pattern):
     
     all_files = [] 
     
     for ext in pattern: 
-        all_files.extend(folder.glob(ext))
+        all_files.extend(Path(path).glob(ext))
         
-    string_out = [os.fspath(a) for a in all_files]
+    # string_out = [os.fspath(a) for a in all_files]
     
-    return string_out
+    return all_files
 
 
 def poly_fn(coef, x):

@@ -22,7 +22,7 @@ from operator import itemgetter
 
 import time
 
-import sami_ppxf_utils_pjw
+# import sami_ppxf_utils_pjw
 
 # import matplotlib.pyplot as plt
 
@@ -32,26 +32,26 @@ import random
 
 ##################################################################################################
 
-def spec_prep(inbluespec, inredspec):
+# def spec_prep(inbluespec, inredspec):
 
-    try:
-        spec, var, hdr = sami_ppxf_utils_pjw.combine_blue_red_aperFITS(inbluespec, inredspec)
-    except Exception as e:
-        print ("Something's wrong.")
-        raise e
+#     try:
+#         spec, var, hdr = sami_ppxf_utils_pjw.combine_blue_red_aperFITS(inbluespec, inredspec)
+#     except Exception as e:
+#         print ("Something's wrong.")
+#         raise e
         
-    gal_name=hdr['NAME']
+#     gal_name=hdr['NAME']
 
 
 
-    # # --------------------------------------------------------------
-    # Pull out the wavelength range of the galaxy
-    x=np.arange(hdr['NAXIS1'])+1
-    L0=hdr['CRVAL1']-hdr['CRPIX1']*hdr['CDELT1'] #Lc-pix*dL
+#     # # --------------------------------------------------------------
+#     # Pull out the wavelength range of the galaxy
+#     x=np.arange(hdr['NAXIS1'])+1
+#     L0=hdr['CRVAL1']-hdr['CRPIX1']*hdr['CDELT1'] #Lc-pix*dL
 
-    lambda_galaxy=L0+x*hdr['CDELT1']
+#     lambda_galaxy=L0+x*hdr['CDELT1']
 
-    return spec, var, lambda_galaxy
+#     return spec, var, lambda_galaxy
 
 
 class Spectrum_Fit():

@@ -677,7 +677,7 @@ class SSP_Params():
             templates = [t.__str__() for t in template_gen]
             templates.sort()
             
-            ages = [float(t.split("\\")[-1][5:9]) for t in templates]
+            ages = [float(t.split("/")[-1][5:9]) for t in templates]
             
             # if len(templates) == 0:
                 

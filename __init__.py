@@ -10,4 +10,4 @@ Created on Wed Oct 21 14:20:39 2020
 # from tools_spec_fit_class import Spectrum_Fit, spec_prep
 # from tools_convolution import Convolutions
 
-from stell_pops_idx.primary_module import run_all
+from stell_pops_idx.primary_module import run_all, run_all_previous_results
