@@ -23,6 +23,7 @@ def run_all(
         flux_spectrum,
         variance_spectrum,
         wavelength_spectrum,
+        template_directory,
         flux_array_templates,
         wavelength_array_templates,
         redshift_estimate,
@@ -31,16 +32,17 @@ def run_all(
         irreg_SSP_models=None,
         log_time=True,
         save_intermediate_files=True
-        ):   
+    ):   
     
-    out_dir = pathlib.Path(output_directory)
+    # out_dir = pathlib.Path(output_directory)
     out_subdir = pathlib.Path(output_directory).joinpath("{}".format(output_id))
+    temp_dir = pathlib.Path(template_directory)
     
     # print (out_subdir.exists())
     out_subdir.mkdir(parents=True, exist_ok=True)
     
     start_time = time.time()
-    err_log_file = out_subdir.joinpath("errors.log")
+    err_log_file = out_subdir.joinpath("Logfile_"+time.strftime("%Y_%m_%dT%H%M%SZ")+".log")
     init_msg = "{} - analysis started.\n\n".format(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
     with err_log_file.open("w") as f:
             f.write(init_msg)
@@ -140,13 +142,13 @@ def run_all(
         
     try:
         
-        template_dir = out_dir.joinpath("models_used")
+        # template_dir = out_dir.joinpath("models_used")
         
         ### Determine the SSP parameters        
         SSP = SSP_Params(
             IM.results["equivalent_widths"],
             IM.results["equivalent_widths_err"],
-            template_dir,
+            temp_dir,
             err_log_file,
             sig_flags=conv_obj.output["convolution_flags"],
             sigma=SF.results["sigma"],
@@ -195,11 +197,15 @@ def run_all(
         results_table["SSP_alpha_err_high"] = SSP.ssp_alpha_tmj_bounds[1]
             
         # out_table_path = out_dir.joinpath("{}_output.fits".format(output_id))
-        out_table_path = out_subdir.joinpath("3_output.fits")
+        out_table_path = out_subdir.joinpath("output.fits")
         results_table.write(
             out_table_path, 
             overwrite=True,
             )
+        final_msg = "{:.2f} - Analysis finished. Results written to disk.\n\n".format(
+            time.time() - start_time)
+        with err_log_file.open("a") as f:
+            f.write(final_msg)
         
     except:
         err_msg = "{:.2f} - Failed to write results to disk.\n\n".format(
@@ -211,32 +217,35 @@ def run_all(
         
 
 def run_all_previous_results(
+        previous_directory,
         output_directory,
         output_id,
-        flux_spectrum,
-        variance_spectrum,
-        wavelength_spectrum,
-        flux_array_templates,
-        wavelength_array_templates,
+        # flux_spectrum,
+        # variance_spectrum,
+        # wavelength_spectrum,
+        template_directory,
+        # flux_array_templates,
+        # wavelength_array_templates,
         redshift_estimate,
         index_definitions,
         reg_SSP_models=None,
         irreg_SSP_models=None,
         log_time=True,
-        previous_directory=None,
         ):   
     
-    out_dir = pathlib.Path(output_directory)
+    # out_dir = pathlib.Path(output_directory)
     out_subdir = pathlib.Path(output_directory).joinpath("{}".format(output_id))
     
-    in_dir = pathlib.Path(previous_directory)
+    # in_dir = pathlib.Path(previous_directory)
     in_subdir = pathlib.Path(previous_directory).joinpath("{}".format(output_id))
+    
+    temp_dir = pathlib.Path(template_directory)
     
     # print (out_subdir.exists())
     out_subdir.mkdir(parents=True, exist_ok=True)
     
     start_time = time.time()
-    err_log_file = out_subdir.joinpath("errors.log")
+    err_log_file = out_subdir.joinpath("Logfile_"+time.strftime("%Y_%m_%dT%H%M%SZ")+".log")
     init_msg = "{} - analysis started.\n\n".format(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
     with err_log_file.open("w") as f:
             f.write(init_msg)
@@ -249,7 +258,7 @@ def run_all_previous_results(
         
         lrd_table_path = in_subdir.joinpath("{}_log_rebinned_data.fits".format(output_id))
         
-        in_table_path = in_subdir.joinpath("3_output.fits")
+        in_table_path = in_subdir.joinpath("output.fits")
         
         log_rebinned_data = Table.read(lrd_table_path, format="fits")     
           
@@ -265,7 +274,7 @@ def run_all_previous_results(
             (c+in_table["velocity"])/(c-in_table["velocity"])) - 1)
         
     except:
-        err_msg = "{:.2f} - Failure in spectral fitting module.\n\n".format(
+        err_msg = "{:.2f} - Failed to read previous data.\n\n".format(
             time.time() - start_time)
         with err_log_file.open("a") as f:
             f.write(err_msg)
@@ -323,13 +332,13 @@ def run_all_previous_results(
         
     try:
         
-        template_dir = in_dir.joinpath("models_used")
+        # template_dir = out_dir.joinpath("models_used")
         
         ### Determine the SSP parameters        
         SSP = SSP_Params(
             IM.results["equivalent_widths"],
             IM.results["equivalent_widths_err"],
-            template_dir,
+            temp_dir,
             err_log_file,
             sig_flags=conv_obj.output["convolution_flags"],
             sigma=in_table["sigma"],
@@ -378,11 +387,15 @@ def run_all_previous_results(
         results_table["SSP_alpha_err_high"] = SSP.ssp_alpha_tmj_bounds[1]
             
         # out_table_path = out_dir.joinpath("{}_output.fits".format(output_id))
-        out_table_path = out_subdir.joinpath("{}_output.fits".format(output_id))
+        out_table_path = out_subdir.joinpath("output.fits".format(output_id))
         results_table.write(
             out_table_path, 
             overwrite=True,
             )
+        final_msg = "{:.2f} - Analysis finished. Results written to disk.\n\n".format(
+            time.time() - start_time)
+        with err_log_file.open("a") as f:
+            f.write(final_msg)
         
     except:
         err_msg = "{:.2f} - Failed to write results to disk.\n\n".format(

@@ -111,7 +111,8 @@ class Dispersion_Correction():
         self.factor = np.sqrt(8.*np.log(2.))
         
         self.temp_dir = temp_dir
-        self.out_dir = Path(out_dir)
+        self.out_dir = out_dir
+        
         self.MILES_FWHM = MILES_FWHM
         
         self.sigma_min = sigma_min
@@ -120,7 +121,6 @@ class Dispersion_Correction():
         self.out_sig_samples = output_sig_samples
         self.out_ages = output_ages
         
-        print (self.out_dir.parts)
         
         ### Note that no exceptions are caught in the main code.
         ### This is intentional, as any errors here must be resolved 
@@ -132,7 +132,7 @@ class Dispersion_Correction():
             
         else:
             try:
-                self.bands = Table.read('templates/Lick_Indices.txt', format = 'ascii')
+                self.bands = Table.read('Lick_Indices_def.txt', format = 'ascii')
                 
             except Exception as e:
                 logging.exception("Failed to initialise index definitions.")
@@ -141,9 +141,9 @@ class Dispersion_Correction():
         if not re_run:
             try:
                 
-                self.age_vals = np.load(self.out_dir+"/age_range.npy")
-                self.Z_vals = np.load(self.out_dir+"/Z_range.npy")
-                self.sigma_range = np.load(self.out_dir+"/sigma_range.npy")
+                self.age_vals = np.load(self.out_dir / "age_range.npy")
+                self.Z_vals = np.load(self.out_dir / "Z_range.npy")
+                self.sigma_range = np.load(self.out_dir / "sigma_range.npy")
                 self.index_array = dict()
                 
                 for n in self.bands["Name"]:
@@ -254,11 +254,15 @@ class Dispersion_Correction():
             
             template_details.append([temp_path, age, Z])
         
-        self.age_vals = np.sort(np.unique([row[1] for row in template_details]))
-        self.Z_vals = np.sort(np.unique([row[2] for row in template_details]))
+        self.age_vals = np.sort(np.unique(
+            [row[1] for row in template_details]
+        ))
+        self.Z_vals = np.sort(np.unique(
+            [row[2] for row in template_details]
+        ))
         
-        print (len(self.age_vals))
-        print (len(self.Z_vals))
+        # print (len(self.age_vals))
+        # print (len(self.Z_vals))
         
         self.sigma_range = np.linspace(self.sigma_min, self.sigma_max, 
                                        num = self.mod_sig_samples)
@@ -266,8 +270,11 @@ class Dispersion_Correction():
         self.index_array = dict()
         
         for n in self.bands["Name"]:
-            self.index_array[n] = np.empty((len(self.age_vals), len(self.Z_vals), 
-                                            self.mod_sig_samples)) 
+            self.index_array[n] = np.empty((
+                len(self.age_vals), 
+                len(self.Z_vals),           
+                self.mod_sig_samples,
+            )) 
         
         # self.index_array = np.empty((len(self.age_vals), len(self.Z_vals), 
         #                              self.mod_sig_samples, len(self.bands)))
@@ -283,7 +290,7 @@ class Dispersion_Correction():
             hdr = temp_FITS[0].header
             
             temp_spec = (temp_FITS[0].data).reshape((4300,))
-            temp_lam = hdr['CRVAL1'] + hdr['CDELT1'] *(np.arange(hdr['NAXIS1']) 
+            temp_lam = hdr['CRVAL1']+ hdr['CDELT1']*(np.arange(hdr['NAXIS1']) 
                                                        + 1 - hdr['CRPIX1'])
         
             SC = Spectrum_Cut(temp_spec, temp_lam, bands = self.bands)
@@ -316,12 +323,13 @@ class Dispersion_Correction():
             
             for j, sigma in enumerate(self.sigma_range):
                 
-                vel_sigma = temp_lam * (np.sqrt((sigma + self.c)/
-                                               (self.c - sigma)) - 1)/hdr["CDELT1"]
+                vel_sigma = temp_lam * (
+                    np.sqrt((sigma + self.c)/
+                            (self.c - sigma)) - 1)/hdr["CDELT1"]
                 
                 temp_disp = util.gaussian_filter1d(temp_spec, vel_sigma)
                 
-                disp_SC = Spectrum_Cut(temp_disp, temp_lam, bands = self.bands)
+                disp_SC = Spectrum_Cut(temp_disp, temp_lam, bands=self.bands)
             
                 ### This is the template at the Lick/IDS resolution
                 # disp_conv_obj = Convolutions(lams, disp_specs, 0, sigma, 0, 
@@ -391,7 +399,10 @@ class Dispersion_Correction():
         np.save(self.out_dir.joinpath("Z_range.npy"), self.Z_vals)
         
         for n in self.bands["Name"]:
-            np.save(self.out_dir.joinpath("full_{0}.npy".format(n)), self.index_array[n])
+            np.save(
+                self.out_dir.joinpath("full_{0}.npy".format(n)), 
+                self.index_array[n]
+            )
         
 ###################################################################################################
                         
@@ -576,13 +587,26 @@ class Dispersion_Correction():
     
 ###################################################################################################
 
-def get_files(path, pattern):
+def get_files(pattern):
     
     all_files = [] 
     
-    for ext in pattern: 
-        all_files.extend(Path(path).glob(ext))
-        
+    print (pattern)
+    
+    for ext in pattern:
+        if len(ext) != 0:
+            
+            # all_files.extend(Path().glob(ext))
+            path = Path(ext)
+            # anchor = path.anchor
+            # extension = path.relative_to(path.anchor).__str__()
+            all_files.extend(Path(path.anchor).glob(path.relative_to(path.anchor).__str__()))
+            # print (Path(anchor).glob(extension))
+            # print (list(Path(anchor).glob(extension)))
+            # for s in Path(anchor).glob(extension):
+                # all_files.extend(s.__str__())
+            # all_files.extend(s for s in Path(anchor).glob(extension).__str__())
+            
     # string_out = [os.fspath(a) for a in all_files]
     
     return all_files
@@ -624,7 +648,7 @@ def corr_fit(age_list, subset_dir, out_dir, bands=None):
               
             data = corr_tab_alpha_4[n]
             
-            print (data)
+            # print (data)
             
             y = np.ma.masked_array(data, mask = np.isnan(data))
             
