@@ -78,15 +78,7 @@ class Index_Measure():
     results:    Tuple, containing eq_width and width_err.
     '''
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     def __init__(self, specs, lams, spec_errs = None, goodpixels = None,
-=======
-    def __init__(self, lams, specs, spec_errs = None, goodpixels = None,
->>>>>>> 7825a90... Previous work
-=======
-    def __init__(self, specs, lams, spec_errs = None, goodpixels = None,
->>>>>>> ce01334... New
                  dlam = 5, bands = None, plot = False,
                  no_error = False, realisations = 100, variance_weight = False):
         self.lams = lams
@@ -183,21 +175,11 @@ class Index_Measure():
                 self.index_errors_cenarro(n, row)
                 
         ### Formats output as a tuple
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> ce01334... New
         # self.results = (self.eq_width, self.width_err)
         self.results = {
             "equivalent_widths":self.eq_width, 
             "equivalent_widths_err":self.width_err,
             }
-<<<<<<< HEAD
-=======
-        self.results = (self.eq_width, self.width_err)
->>>>>>> 7825a90... Previous work
-=======
->>>>>>> ce01334... New
         
         return
     
@@ -328,13 +310,10 @@ class Index_Measure():
         ### Find the array location for the absorption feature
         ab_idx = np.where((lam >= b["Index_1"]) &
                           (lam <= b["Index_2"]))[0]
-<<<<<<< HEAD
         blue_idx = np.where((lam >= b["Blue_1"]) &
                           (lam <= b["Blue_2"]))[0]
         red_idx = np.where((lam >= b["Red_1"]) &
                           (lam <= b["Red_2"]))[0]
-=======
->>>>>>> 7825a90... Previous work
             
         ### Check the index falls in the wavelength range
         if (b["Blue_1"] - self.dlam < lam[0]) or \
@@ -348,15 +327,10 @@ class Index_Measure():
             
         elif np.sum(gpix[ab_idx])/len(gpix[ab_idx]) <= 0.75:
             eq_width_2 = np.nan
-            
-<<<<<<< HEAD
         elif np.sum(gpix[blue_idx])/len(gpix[blue_idx]) <= 0.75:
             eq_width_2 = np.nan
         elif np.sum(gpix[red_idx])/len(gpix[red_idx]) <= 0.75:
             eq_width_2 = np.nan
-            
-=======
->>>>>>> 7825a90... Previous work
             
         else:
             ### Find indices for each band
@@ -531,22 +505,12 @@ class Spectrum_Cut():
             else:
                 self.goodpixels_c["{}".format(row["Name"])] = None
         
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> ce01334... New
         self.output = {
             "fluxes":self.spectra_c,
             "fluxes_err":self.spec_err_c,
             "wavelengths":self.lambda_c, 
             "good_pixels":self.goodpixels_c,
             }
-<<<<<<< HEAD
-=======
-        self.results = (self.spectra_c, self.lambda_c, self.spec_err_c, self.goodpixels_c)
->>>>>>> 7825a90... Previous work
-=======
->>>>>>> ce01334... New
         
         return
         
