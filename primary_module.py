@@ -396,3 +396,11 @@ def run_all_previous_results(
             time.time() - start_time)
         with err_log_file.open("a") as f:
             f.write(final_msg)
+            
+    except:
+        err_msg = "{:.2f} - Failed to write results to disk.\n\n".format(
+            time.time() - start_time)
+        with err_log_file.open("a") as f:
+            f.write(err_msg)
+            traceback.print_exc(file = f)
+        raise Exception(err_msg)
